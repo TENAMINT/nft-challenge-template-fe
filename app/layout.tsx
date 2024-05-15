@@ -5,6 +5,7 @@ import "./globals.css";
 import "@near-wallet-selector/modal-ui/styles.css";
 
 import { MintbaseWalletContextProvider } from "@mintbase-js/react";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en">
         <body className={inter.className}>
           <div className="flex flex-1 flex-col min-h-screen text-gray-500 gradient w-full  h-full flex justify-center items-center bold text-white">
-            {children}
+            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           </div>
         </body>
       </html>
