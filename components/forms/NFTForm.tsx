@@ -24,13 +24,16 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { NFTContract } from "@/types/nft";
 import { fetchGraphQl } from "@mintbase-js/data";
 import { Progress } from "../ChallengeCreator";
+import { Network } from "@mintbase-js/sdk";
 
 export default function NFTForm({
   nft,
   setNft,
+  network,
 }: {
   nft: NFTContract | undefined;
   setNft: Dispatch<SetStateAction<NFTContract | undefined>>;
+  network: Network;
 }) {
   const [nftId, setNftId] = useState(nft?.id || "");
 
@@ -53,11 +56,10 @@ export default function NFTForm({
       data?: {
         nft_contracts: Array<NFTContract>;
       };
-    } = await fetchGraphQl({ query, variables: { _eq: id } });
-    console.log(res.data);
+    } = await fetchGraphQl({ query, variables: { _eq: id }, network });
+    console.log(network);
     if (res.data?.nft_contracts[0] != null) {
       setNft(res.data.nft_contracts[0]);
-      console.log(nft, "here");
     }
   }
 

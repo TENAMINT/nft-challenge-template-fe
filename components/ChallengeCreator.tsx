@@ -1,15 +1,19 @@
 import NFTForm from "@/components/forms/NFTForm";
 import { NFTContract } from "@/types/nft";
 import { useEffect, useState } from "react";
-import { VictoryConditionsForm } from "./VictoryConditionsForm";
-import { TerminationRulesForm } from "./TerminationRulesForm";
+import { VictoryConditionsForm } from "./forms/VictoryConditionsForm";
+import { TerminationRulesForm } from "./forms/TerminationRulesForm";
 import { Button } from "./ui/button";
+import { Network, execute } from "@mintbase-js/sdk";
+import { NearWalletConnector } from "./NearWalletSelector";
+import { MintbaseWalletContextProvider, useMbWallet } from "@mintbase-js/react";
 
 export enum Progress {
   NFTSearch,
   SetChallenges,
   SetTerminationRules,
   CreateContract,
+  ChallengeCreated,
 }
 
 /**
@@ -18,7 +22,7 @@ export enum Progress {
  * Challenge pieces already exist on blockchain
  *
  */
-export default function ChallengeCreator() {
+export default function ChallengeCreator({ network }: { network: Network }) {
   const [progress, setProgress] = useState<Progress>(Progress.NFTSearch);
   const [nft, setNft] = useState<NFTContract | undefined>(undefined);
   const [challengeNfts, setChallengeNfts] = useState<Array<NFTContract>>([]);
@@ -26,6 +30,7 @@ export default function ChallengeCreator() {
   const [creatorCanEndChallenge, setCreatorCanEndChallenge] = useState(false);
   const [winnerCount, setWinnerCount] = useState(Number.MAX_VALUE);
   const [maxProgress, setMaxProgress] = useState(Progress.NFTSearch);
+  const { isConnected, selector, connect, activeAccountId } = useMbWallet();
 
   useEffect(() => {
     if (nft != null) {
@@ -45,8 +50,39 @@ export default function ChallengeCreator() {
     }
   }, [progress]);
 
+  const onSubmit = async () => {
+    const wallet = await selector.wallet();
+    if (!isConnected) return false;
+
+    const res = await wallet.signAndSendTransaction({
+      receiverId: "supreme-squirrel.testnet",
+      actions: [
+        {
+          type: "FunctionCall",
+          params: {
+            methodName: "create_challenge",
+            args: {
+              name: `test_challenge_${Math.floor(Math.random() * 1000000)}`,
+              challenge_nft: challengeNfts[0].id,
+              termination_date: 1,
+              winner_limit: 1,
+              reward_nft: nft!.id,
+            },
+            gas: "90000000000000",
+            deposit: "4000000000000000000000000",
+          },
+        },
+      ],
+    });
+
+    if (res != null) {
+      setProgress(Progress.ChallengeCreated);
+    }
+    // await providers.getTransactionLastResult(outcome);
+  };
+
   const prefix = (
-    <div className="flex items-start space-x-4 mb-10">
+    <div className="flex items-start space-x-4 mb-10 ">
       {nft?.icon != null && (
         <img
           alt="NFT Icon"
@@ -100,7 +136,8 @@ export default function ChallengeCreator() {
       return (
         <div>
           {prefix}
-          <NFTForm nft={nft} setNft={setNft} />
+          <NFTForm nft={nft} setNft={setNft} network={network} />
+          <NearWalletConnector />
         </div>
       );
     case Progress.SetChallenges:
@@ -114,7 +151,9 @@ export default function ChallengeCreator() {
             setProgress={setProgress}
             winnerCount={winnerCount}
             setWinnerCount={setWinnerCount}
+            network={network}
           />
+          <NearWalletConnector />
         </div>
       );
     case Progress.SetTerminationRules:
@@ -128,21 +167,30 @@ export default function ChallengeCreator() {
             creatorCanEndChallenge={creatorCanEndChallenge}
             setCreatorCanEndChallenge={setCreatorCanEndChallenge}
           />
+          <NearWalletConnector />
         </div>
       );
     case Progress.CreateContract:
       return (
         <div>
           {prefix}
-
           <div className="mt-6 flex justify-between">
             <Button onClick={() => setProgress(Progress.SetTerminationRules)} variant="outline">
               Previous
             </Button>
-            <Button className="ml-4" onClick={() => setProgress(Progress.CreateContract)}>
-              Next
+            <Button className="ml-4" onClick={onSubmit}>
+              Confirm
             </Button>
           </div>
+          <NearWalletConnector />
+        </div>
+      );
+    case Progress.ChallengeCreated:
+      return (
+        <div>
+          {prefix}
+          <div className="mt-6 flex justify-between">Congrats! You can find your challenge at</div>
+          <NearWalletConnector />
         </div>
       );
   }

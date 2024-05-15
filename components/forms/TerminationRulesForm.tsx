@@ -22,7 +22,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Progress } from "./ChallengeCreator";
+import { Progress } from "../ChallengeCreator";
 
 export function TerminationRulesForm({
   setProgress,
@@ -37,7 +37,6 @@ export function TerminationRulesForm({
   terminationDate: Date | undefined;
   setTerminationDate: Dispatch<SetStateAction<Date | undefined>>;
 }) {
-  const onNext = () => {};
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div className="space-y-4">

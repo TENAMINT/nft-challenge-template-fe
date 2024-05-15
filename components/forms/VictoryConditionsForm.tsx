@@ -23,11 +23,12 @@ import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { NFTContract } from "@/types/nft";
-import { Progress } from "./ChallengeCreator";
+import { Progress } from "../ChallengeCreator";
 import { Dispatch, SetStateAction, useState } from "react";
 import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
+import { Network } from "@mintbase-js/sdk";
+import { Checkbox } from "../ui/checkbox";
 import { fetchGraphQl } from "@mintbase-js/data";
-import { Checkbox } from "./ui/checkbox";
 
 export function VictoryConditionsForm({
   nft,
@@ -36,6 +37,7 @@ export function VictoryConditionsForm({
   setChallengeNfts,
   setWinnerCount,
   winnerCount,
+  network,
 }: {
   nft: NFTContract;
   challengeNfts: Array<NFTContract>;
@@ -43,6 +45,7 @@ export function VictoryConditionsForm({
   setChallengeNfts: Dispatch<SetStateAction<Array<NFTContract>>>;
   setWinnerCount: Dispatch<SetStateAction<number>>;
   winnerCount: number;
+  network: Network;
 }) {
   const [challengeCount, setChallengeCount] = useState(Math.max(challengeNfts.length, 1));
   const [nftIds, setNftIds] = useState<Array<string>>(challengeNfts.map((nft) => nft.id));
@@ -63,10 +66,9 @@ export function VictoryConditionsForm({
         }
       }`,
       variables: { _in: nftIds },
+      network,
     });
-    console.log(res);
     if (res.data?.nft_contracts != null) {
-      console.log(res.data, "here");
       setChallengeNfts(res.data?.nft_contracts);
     }
   }
