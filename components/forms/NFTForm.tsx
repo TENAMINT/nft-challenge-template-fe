@@ -19,18 +19,22 @@ To read more about using these font, please visit the Next.js documentation:
 **/
 "use client";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { tokenById } from "@mintbase-js/data";
 import { Dispatch, SetStateAction, useState } from "react";
 import { NFTContract } from "@/types/nft";
+import { fetchGraphQl } from "@mintbase-js/data";
+import { Progress } from "../ChallengeCreator";
 
-export default function NFTForm({ setNft }: { setNft: Dispatch<SetStateAction<NFTContract | undefined>> }) {
-  const [nftId, setNftId] = useState("");
+export default function NFTForm({
+  nft,
+  setNft,
+}: {
+  nft: NFTContract | undefined;
+  setNft: Dispatch<SetStateAction<NFTContract | undefined>>;
+}) {
+  const [nftId, setNftId] = useState(nft?.id || "");
 
-  const operationsDoc = `
+  const query = `
   query NftContract($_eq: String = "") {
     nft_contracts(where: {id: {_eq: $_eq}}) {
       category
@@ -45,19 +49,24 @@ export default function NFTForm({ setNft }: { setNft: Dispatch<SetStateAction<NF
 `;
 
   async function fetchNftContract(id: string) {
-    const { errors, data } = await fetchGraphQL(operationsDoc, "NftContract", { _eq: id });
-    if (errors) {
-      console.error(errors);
+    const res: {
+      data?: {
+        nft_contracts: Array<NFTContract>;
+      };
+    } = await fetchGraphQl({ query, variables: { _eq: id } });
+    console.log(res.data);
+    if (res.data?.nft_contracts[0] != null) {
+      setNft(res.data.nft_contracts[0]);
+      console.log(nft, "here");
     }
-    setNft(data.nft_contracts[0]);
   }
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Create Your NFT Challenge</h1>
+      <div className="space-y-2 text-left">
+        <h2 className="text-xl font-semibold">Choose your reward NFT</h2>
         <p className="text-gray-500 dark:text-gray-400">
-          Unleash your creativity and captivate your audience with a unique NFT challenge.
+          Enter the ID of the NFT you would like to use as a reward for completing the challenge.
         </p>
       </div>
       <div className="space-y-6">
@@ -75,9 +84,7 @@ export default function NFTForm({ setNft }: { setNft: Dispatch<SetStateAction<NF
           </div>
         </div>
         <div className="flex justify-between">
-          <Button onClick={async () => await fetchNftContract(nftId)} variant="outline">
-            Get Started
-          </Button>
+          <Button onClick={async () => await fetchNftContract(nftId)}>Next</Button>
         </div>
       </div>
     </div>
