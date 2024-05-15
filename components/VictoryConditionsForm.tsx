@@ -77,7 +77,7 @@ export function VictoryConditionsForm({
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div className="flex flex-col items-start justify-between">
-        <h2 className="text-xl font-semibold">Choose your challenge's victory conditions</h2>
+        <h2 className="text-xl font-semibold">Choose your challenge&apos;s victory conditions</h2>
         <p className="text-gray-500 dark:text-gray-400">Enter the details for your challenges.</p>
       </div>
       {/* <div className="flex flex-col space-y-1 mt-2">
@@ -107,7 +107,6 @@ export function VictoryConditionsForm({
             }
           }}
           defaultValue="unlimited"
-          id="winners"
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select quantity" />
@@ -153,7 +152,7 @@ export function VictoryConditionsForm({
       </div>
       <div>
         {[...Array(challengeCount).keys()].map((num) => (
-          <div className="grid gap-4">
+          <div key={num} className="grid gap-4">
             <div className="text-lg font-medium grid gap-2">Challenge #{num + 1}</div>
             <div className="flex items-center justify-between">
               <Label htmlFor="challenges">NFT ID</Label>
