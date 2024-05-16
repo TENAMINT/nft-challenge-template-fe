@@ -81,9 +81,9 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     // await providers.getTransactionLastResult(outcome);
   };
 
-  const prefix = (
-    <div className="flex items-start space-x-4 mb-10 ">
-      {nft?.icon != null && (
+  const prefix =
+    nft?.icon != null ? (
+      <div className="flex items-start space-x-4 my-5 ">
         <img
           alt="NFT Icon"
           className="rounded-md"
@@ -95,49 +95,51 @@ export default function ChallengeCreator({ network }: { network: Network }) {
           }}
           width="120"
         />
-      )}
-
-      <div className={`grid-1 gap-1 ${nft == null ? "hidden" : ""}`}>
-        <div className="text-lg font-medium">Reward: {nft?.name}</div>
-        {maxProgress >= Progress.SetChallenges && (
-          <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-            {/* <AwardIcon className="w-4 h-4" /> */}
-            <span>
-              {winnerCount == Number.MAX_VALUE ? "Unlimited" : winnerCount} winner{winnerCount > 1 ? "s" : ""}
-            </span>
-          </div>
-        )}
-        {challengeNfts.length > 0 && (
-          <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-            {/* <PuzzleIcon className="w-4 h-4" /> */}
-            <span>
-              {challengeNfts.length} Challenge{challengeNfts.length > 1 ? "s" : ""}
-            </span>
-          </div>
-        )}
-        {maxProgress >= Progress.SetTerminationRules && (
-          <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-            {/* <CalendarDaysIcon className="w-4 h-4" /> */}
-            <span>{terminationDate != null ? `Ends on ${terminationDate.toString()}` : `Never ends`}</span>
-          </div>
-        )}
-        {maxProgress >= Progress.SetTerminationRules && (
-          <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-            {/* <BoltIcon className="w-4 h-4" /> */}
-            <span>Creator can{!creatorCanEndChallenge && "not"} end challenge</span>
-          </div>
-        )}
+        <div className={`grid-1 gap-1 ${nft == null ? "hidden" : ""}`}>
+          <div className="text-lg font-medium">Reward: {nft?.name}</div>
+          {maxProgress >= Progress.SetChallenges && (
+            <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
+              {/* <AwardIcon className="w-4 h-4" /> */}
+              <span>
+                {winnerCount == Number.MAX_VALUE ? "Unlimited" : winnerCount} winner{winnerCount > 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
+          {challengeNfts.length > 0 && (
+            <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
+              {/* <PuzzleIcon className="w-4 h-4" /> */}
+              <span>
+                {challengeNfts.length} Challenge{challengeNfts.length > 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
+          {maxProgress >= Progress.SetTerminationRules && (
+            <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
+              {/* <CalendarDaysIcon className="w-4 h-4" /> */}
+              <span>{terminationDate != null ? `Ends on ${terminationDate.toString()}` : `Never ends`}</span>
+            </div>
+          )}
+          {maxProgress >= Progress.SetTerminationRules && (
+            <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
+              {/* <BoltIcon className="w-4 h-4" /> */}
+              <span>Creator can{!creatorCanEndChallenge && "not"} end challenge</span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    ) : null;
 
   switch (progress) {
     case Progress.NFTSearch:
-      return (
+      return !isConnected ? (
+        <div className="flex flex-col items-center justify-center">
+          <div className="mb-6">You'll need to connect your NEAR wallet to create a challenge.</div>
+          <NearWalletConnector />
+        </div>
+      ) : (
         <div>
           {prefix}
           <NFTForm nft={nft} setNft={setNft} network={network} />
-          <NearWalletConnector />
         </div>
       );
     case Progress.SetChallenges:
@@ -153,7 +155,6 @@ export default function ChallengeCreator({ network }: { network: Network }) {
             setWinnerCount={setWinnerCount}
             network={network}
           />
-          <NearWalletConnector />
         </div>
       );
     case Progress.SetTerminationRules:
@@ -167,7 +168,6 @@ export default function ChallengeCreator({ network }: { network: Network }) {
             creatorCanEndChallenge={creatorCanEndChallenge}
             setCreatorCanEndChallenge={setCreatorCanEndChallenge}
           />
-          <NearWalletConnector />
         </div>
       );
     case Progress.CreateContract:
@@ -182,7 +182,6 @@ export default function ChallengeCreator({ network }: { network: Network }) {
               Confirm
             </Button>
           </div>
-          <NearWalletConnector />
         </div>
       );
     case Progress.ChallengeCreated:
@@ -190,7 +189,6 @@ export default function ChallengeCreator({ network }: { network: Network }) {
         <div>
           {prefix}
           <div className="mt-6 flex justify-between">Congrats! You can find your challenge at</div>
-          <NearWalletConnector />
         </div>
       );
   }

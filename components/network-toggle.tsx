@@ -18,9 +18,9 @@ To read more about using these font, please visit the Next.js documentation:
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
 import { Toggle } from "@/components/ui/toggle";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Network } from "@mintbase-js/sdk";
-
+import { Wallet, useMbWallet } from "@mintbase-js/react";
 export function NetworkToggle({
   network,
   setNetwork,
@@ -28,13 +28,31 @@ export function NetworkToggle({
   network: Network;
   setNetwork: Dispatch<SetStateAction<Network>>;
 }) {
+  const { isConnected, selector, connect, activeAccountId } = useMbWallet();
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  useEffect(() => {
+    (async () => {
+      if (isConnected) {
+        setWallet(await selector.wallet());
+      } else {
+        setWallet(null);
+      }
+    })();
+  }, [isConnected]);
+
   const selectedClass =
     "bg-gray-800 text-gray-50 hover:bg-gray-700 focus:z-10 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200";
   const unselectedClass =
     "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:z-10 dark:bg-gray-800 dark:text-gray-50 dark:hover:bg-gray-700";
   return (
-    <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6 absolute right-0 top-0">
-      <div className="ml-auto flex items-center gap-4">
+    <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6 absolute right-0 top-10">
+      <div className="ml-auto flex flex-row items-center gap-4">
+        {wallet != null && (
+          <div className="mr-4">
+            <p>You are connected as {activeAccountId}</p>
+            {/* <Button onClick={wallet!.signOut}>Disconnect</Button> */}
+          </div>
+        )}
         <Toggle aria-label="Toggle network" className="flex items-center">
           <div
             onClick={() => setNetwork("mainnet")}
