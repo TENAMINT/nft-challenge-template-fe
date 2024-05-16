@@ -133,7 +133,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     case Progress.NFTSearch:
       return !isConnected ? (
         <div className="flex flex-col items-center justify-center">
-          <div className="mb-6">You'll need to connect your NEAR wallet to create a challenge.</div>
+          <div className="mb-6">You`&apos;ll need to connect your NEAR wallet to create a challenge.</div>
           <NearWalletConnector />
         </div>
       ) : (

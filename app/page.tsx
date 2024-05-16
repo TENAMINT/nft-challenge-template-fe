@@ -22,7 +22,7 @@ export default function Home() {
 
         {txHash != null && (
           <div className="mt-4">
-            Congrats! You're NFT Challenge contract was made in transaction {txHash}. You can view the transaction{" "}
+            Congrats! You`&apos;re NFT Challenge contract was made in transaction {txHash}. You can view the transaction{" "}
             <a
               href={`https://testnet.nearblocks.io/txns/${txHash}`}
               target="_blank"
