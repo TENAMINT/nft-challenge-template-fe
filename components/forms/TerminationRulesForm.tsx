@@ -53,7 +53,6 @@ export function TerminationRulesForm({
             onCheckedChange={() => {
               if (terminationDate == null) {
                 const tomorrow = new Date();
-
                 // add a day
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 setTerminationDate(tomorrow);
@@ -85,9 +84,7 @@ export function TerminationRulesForm({
                 <Calendar
                   selected={terminationDate}
                   onDayClick={(e) => {
-                    console.log(e, "e");
                     setTerminationDate(e);
-                    console.log(terminationDate, "termination date");
                   }}
                   initialFocus
                   mode="single"

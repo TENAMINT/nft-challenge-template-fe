@@ -31,7 +31,6 @@ import { Checkbox } from "../ui/checkbox";
 import { fetchGraphQl } from "@mintbase-js/data";
 
 export function VictoryConditionsForm({
-  nft,
   setProgress,
   challengeNfts,
   setChallengeNfts,
@@ -39,7 +38,6 @@ export function VictoryConditionsForm({
   winnerCount,
   network,
 }: {
-  nft: NFTContract;
   challengeNfts: Array<NFTContract>;
   setProgress: Dispatch<SetStateAction<Progress>>;
   setChallengeNfts: Dispatch<SetStateAction<Array<NFTContract>>>;
@@ -105,7 +103,7 @@ export function VictoryConditionsForm({
             if (e === "limited") {
               setWinnerCount(1);
             } else {
-              setWinnerCount(Number.MAX_VALUE);
+              setWinnerCount(Number.MAX_SAFE_INTEGER);
             }
           }}
           defaultValue="unlimited"
@@ -116,7 +114,7 @@ export function VictoryConditionsForm({
           <SelectContent>
             <SelectItem
               onChange={() => {
-                setWinnerCount(Number.MAX_VALUE);
+                setWinnerCount(Number.MAX_SAFE_INTEGER);
               }}
               value="unlimited"
             >
@@ -133,7 +131,7 @@ export function VictoryConditionsForm({
           </SelectContent>
         </Select>
       </div>
-      <div className={winnerCount === Number.MAX_VALUE ? "hidden" : "grid gap-2"}>
+      <div className={winnerCount === Number.MAX_SAFE_INTEGER ? "hidden" : "grid gap-2"}>
         <Label htmlFor="challenges">Number of Winners</Label>
         <Input
           placeholder="Enter number of winners"

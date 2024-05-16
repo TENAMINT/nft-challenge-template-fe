@@ -27,15 +27,23 @@ import { Progress } from "../ChallengeCreator";
 import { Network } from "@mintbase-js/sdk";
 
 export default function NFTForm({
-  nft,
-  setNft,
+  rewardNft,
+  setRewardNft,
   network,
+  name,
+  setName,
+  desc,
+  setDesc,
 }: {
-  nft: NFTContract | undefined;
-  setNft: Dispatch<SetStateAction<NFTContract | undefined>>;
+  rewardNft: NFTContract | undefined;
+  setRewardNft: Dispatch<SetStateAction<NFTContract | undefined>>;
+  name: string | undefined;
+  setName: Dispatch<SetStateAction<string | undefined>>;
+  desc: string | undefined;
+  setDesc: Dispatch<SetStateAction<string | undefined>>;
   network: Network;
 }) {
-  const [nftId, setNftId] = useState(nft?.id || "");
+  const [rewardNftId, setRewardNftId] = useState(rewardNft?.id || "");
 
   const query = `
   query NftContract($_eq: String = "") {
@@ -57,9 +65,8 @@ export default function NFTForm({
         nft_contracts: Array<NFTContract>;
       };
     } = await fetchGraphQl({ query, variables: { _eq: id }, network });
-    console.log(network);
     if (res.data?.nft_contracts[0] != null) {
-      setNft(res.data.nft_contracts[0]);
+      setRewardNft(res.data.nft_contracts[0]);
     }
   }
 
@@ -73,12 +80,38 @@ export default function NFTForm({
       </div>
       <div className="space-y-6">
         <div>
-          <label htmlFor="nft-id">NFT ID</label>
+          <label htmlFor="nft-id">Challenge Name</label>
           <div className="grid gap-4">
             <div className="space-y-2">
               <Input
-                value={nftId}
-                onChange={(e) => setNftId(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                id="name"
+                placeholder="Enter a name for the challenge"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <label htmlFor="nft-id">Challenge Description</label>
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Input
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                id="desc"
+                placeholder="Enter a description for the challenge"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <label htmlFor="nft-id">Reward NFT ID</label>
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Input
+                value={rewardNftId}
+                onChange={(e) => setRewardNftId(e.target.value)}
                 id="nft-id"
                 placeholder="Enter the NFT ID"
               />
@@ -86,7 +119,7 @@ export default function NFTForm({
           </div>
         </div>
         <div className="flex justify-between">
-          <Button onClick={async () => await fetchNftContract(nftId)}>Next</Button>
+          <Button onClick={async () => await fetchNftContract(rewardNftId)}>Next</Button>
         </div>
       </div>
     </div>

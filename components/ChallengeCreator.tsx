@@ -7,6 +7,9 @@ import { Button } from "./ui/button";
 import { Network, execute } from "@mintbase-js/sdk";
 import { NearWalletConnector } from "./NearWalletSelector";
 import { MintbaseWalletContextProvider, useMbWallet } from "@mintbase-js/react";
+import { WalletSelector, setupWalletSelector } from "@near-wallet-selector/core";
+import { providers } from "near-api-js";
+import BigNumber from "bignumber.js";
 
 export enum Progress {
   NFTSearch,
@@ -16,6 +19,8 @@ export enum Progress {
   ChallengeCreated,
 }
 
+//network config (replace testnet with mainnet or betanet)
+const provider = new providers.JsonRpcProvider({ url: "https://archival-rpc.testnet.near.org" });
 /**
  * Current assumptions:
  * Reward NFT already exists on blockchain
@@ -24,19 +29,21 @@ export enum Progress {
  */
 export default function ChallengeCreator({ network }: { network: Network }) {
   const [progress, setProgress] = useState<Progress>(Progress.NFTSearch);
-  const [nft, setNft] = useState<NFTContract | undefined>(undefined);
+  const [rewardNft, setRewardNft] = useState<NFTContract | undefined>(undefined);
+  const [name, setName] = useState<string | undefined>(undefined);
+  const [desc, setDesc] = useState<string | undefined>(undefined);
   const [challengeNfts, setChallengeNfts] = useState<Array<NFTContract>>([]);
   const [terminationDate, setTerminationDate] = useState<Date | undefined>(undefined);
   const [creatorCanEndChallenge, setCreatorCanEndChallenge] = useState(false);
-  const [winnerCount, setWinnerCount] = useState(Number.MAX_VALUE);
+  const [winnerCount, setWinnerCount] = useState(Number.MAX_SAFE_INTEGER);
   const [maxProgress, setMaxProgress] = useState(Progress.NFTSearch);
   const { isConnected, selector, connect, activeAccountId } = useMbWallet();
 
   useEffect(() => {
-    if (nft != null) {
+    if (rewardNft != null) {
       setProgress(Progress.SetChallenges);
     }
-  }, [nft]);
+  }, [rewardNft]);
 
   useEffect(() => {
     if (challengeNfts.length > 0) {
@@ -53,6 +60,13 @@ export default function ChallengeCreator({ network }: { network: Network }) {
   const onSubmit = async () => {
     const wallet = await selector.wallet();
     if (!isConnected) return false;
+    const args = {
+      name: name,
+      challenges: challengeNfts.map((nft) => nft.id),
+      termination_date: terminationDate?.getTime().toString() || Number.MAX_SAFE_INTEGER.toString(),
+      winner_limit: winnerCount.toString(),
+      reward_nft: rewardNft!.id,
+    };
 
     const res = await wallet.signAndSendTransaction({
       receiverId: "supreme-squirrel.testnet",
@@ -61,47 +75,48 @@ export default function ChallengeCreator({ network }: { network: Network }) {
           type: "FunctionCall",
           params: {
             methodName: "create_challenge",
-            args: {
-              name: `test_challenge_${Math.floor(Math.random() * 1000000)}`,
-              challenge_nft: challengeNfts[0].id,
-              termination_date: 1,
-              winner_limit: 1,
-              reward_nft: nft!.id,
-            },
+            args,
             gas: "90000000000000",
             deposit: "4000000000000000000000000",
           },
         },
       ],
+      callbackUrl: `${window.location.origin}/challenges/${name}`,
     });
 
     if (res != null) {
       setProgress(Progress.ChallengeCreated);
     }
-    // await providers.getTransactionLastResult(outcome);
   };
 
   const prefix =
-    nft?.icon != null ? (
+    progress > Progress.NFTSearch ? (
       <div className="flex items-start space-x-4 my-5 ">
-        <img
-          alt="NFT Icon"
-          className="rounded-md"
-          height="120"
-          src={nft.icon}
-          style={{
-            aspectRatio: "80/80",
-            objectFit: "cover",
-          }}
-          width="120"
-        />
-        <div className={`grid-1 gap-1 ${nft == null ? "hidden" : ""}`}>
-          <div className="text-lg font-medium">Reward: {nft?.name}</div>
+        {rewardNft?.icon != null && (
+          <img
+            alt="NFT Icon"
+            className="rounded-md"
+            height="120"
+            src={rewardNft.icon}
+            style={{
+              aspectRatio: "80/80",
+              objectFit: "cover",
+            }}
+            width="120"
+          />
+        )}
+        <div className={`grid-1 gap-1 ${rewardNft == null ? "hidden" : ""}`}>
+          <div className="text-lg font-medium">{name}</div>
+
+          <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
+            {/* <PuzzleIcon className="w-4 h-4" /> */}
+            <span>Reward: {rewardNft?.name}</span>
+          </div>
           {maxProgress >= Progress.SetChallenges && (
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
               {/* <AwardIcon className="w-4 h-4" /> */}
               <span>
-                {winnerCount == Number.MAX_VALUE ? "Unlimited" : winnerCount} winner{winnerCount > 1 ? "s" : ""}
+                {winnerCount == Number.MAX_SAFE_INTEGER ? "Unlimited" : winnerCount} winner{winnerCount > 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -139,7 +154,15 @@ export default function ChallengeCreator({ network }: { network: Network }) {
       ) : (
         <div>
           {prefix}
-          <NFTForm nft={nft} setNft={setNft} network={network} />
+          <NFTForm
+            rewardNft={rewardNft}
+            setRewardNft={setRewardNft}
+            network={network}
+            name={name}
+            setName={setName}
+            desc={desc}
+            setDesc={setDesc}
+          />
         </div>
       );
     case Progress.SetChallenges:
@@ -147,7 +170,6 @@ export default function ChallengeCreator({ network }: { network: Network }) {
         <div>
           {prefix}
           <VictoryConditionsForm
-            nft={nft!}
             challengeNfts={challengeNfts}
             setChallengeNfts={setChallengeNfts}
             setProgress={setProgress}
