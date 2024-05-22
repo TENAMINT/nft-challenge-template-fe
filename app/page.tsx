@@ -23,6 +23,7 @@ export default function Home() {
         <h1 className="text-l font-bold my-5">
           Generate an nft challenge
           <Link className="text-blue-500" href={"/create-challenge"}>
+            {" "}
             now!
           </Link>
         </h1>
