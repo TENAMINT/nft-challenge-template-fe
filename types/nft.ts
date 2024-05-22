@@ -6,6 +6,7 @@ export type NFTContract = {
   name: string;
   symbol: string;
   owner_id: string;
+  owned?: boolean;
 };
 
 // snake case cause it's pulled directly from blockchain

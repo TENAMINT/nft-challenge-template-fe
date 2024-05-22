@@ -41,9 +41,11 @@ export function NFTCarousel(props: { nfts: ReadonlyArray<NFTContract> }) {
               <div className="mt-4 text-center">
                 <h3 className="text-lg font-semibold">
                   <a href={`https://testnet.nearblocks.io/address/${nft.name}`} className="font-medium text-blue-500">
-                    {nft.name}{" "}
+                    {nft.symbol}{" "}
                   </a>
                 </h3>
+                <p className="text-gray-500 dark:text-gray-400">{nft.name}</p>
+                {nft.owned && <p className="text-gray-500 dark:text-gray-400 font-bold mt-4">You own this NFT! </p>}
               </div>
             </div>
           </CarouselItem>

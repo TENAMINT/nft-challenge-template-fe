@@ -26,10 +26,10 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { useMbWallet } from "@mintbase-js/react";
+import { Wallet, useMbWallet } from "@mintbase-js/react";
 import Link from "next/link";
 import { NFTChallengeMetaData, NFTContract, RawNFTChallengeMetaData } from "@/types/nft";
-import { Account, Connection, Contract, connect } from "near-api-js";
+import { Account, Connection, Contract, Near, connect } from "near-api-js";
 import { set } from "date-fns";
 
 const connectionConfig = {
@@ -42,17 +42,21 @@ const connectionConfig = {
 };
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { NftMetadata } from "@mintbase-js/data/lib/graphql/codegen/graphql";
+import { NftContracts, NftMetadata } from "@mintbase-js/data/lib/graphql/codegen/graphql";
 import { fetchGraphQl } from "@mintbase-js/data";
 import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
 import { NFTCarousel } from "@/components/carousel";
+import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
+import { NearWalletConnector } from "@/components/NearWalletSelector";
 
 export default function NFTChallenge() {
   const [network, setNetwork] = useState<Network>("testnet");
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();
   const [rewardNftMetaData, setRewardNftMetaData] = useState<NFTContract | null>();
   const [challengeNfts, setChallengeNfts] = useState<ReadonlyArray<NFTContract>>([]);
+  const [challengeNftsOwned, setChallengeNftsOwned] = useState<ReadonlyArray<NftContracts>>([]);
   const [isWinner, setIsWinner] = useState<boolean>(false);
+
   const { isConnected, selector } = useMbWallet();
 
   const params = useParams<{ name: string }>();
@@ -90,12 +94,46 @@ export default function NFTChallenge() {
   useEffect(() => {
     (async () => {
       if (challengeMetaData) {
-        const [rewardNft, challengeNfts] = await Promise.all([
+        let wallet: Wallet & SignMessageMethod;
+        let accounts: Account[];
+        let nearConnection: Near;
+        if (isConnected) {
+          nearConnection = await connect(connectionConfig);
+          wallet = await selector.wallet();
+          accounts = (await wallet.getAccounts()) as Account[];
+        }
+
+        const [rewardNft, challengeNfts, challengeNftsOwned] = await Promise.all([
           fetchNftContract(challengeMetaData.rewardNft, network),
           fetchNftContracts(challengeMetaData.challengeNfts, network),
+          isConnected
+            ? // TODO: Change to grpahql call
+              Promise.all(
+                challengeMetaData.challengeNfts.map((nft) => {
+                  const contract = new Contract(nearConnection.connection, `${nft}`, {
+                    viewMethods: ["nft_tokens_for_owner"],
+                    changeMethods: [],
+                    useLocalViewExecution: true,
+                  }) as Contract & {
+                    // wrong return type, but we're just checking for existence right now
+                    nft_tokens_for_owner: (args: { account_id: string }) => Promise<NftContracts[]>;
+                  };
+                  return contract.nft_tokens_for_owner({
+                    account_id: accounts[0].accountId,
+                  });
+                })
+              )
+            : Promise.resolve([]),
         ]);
         setRewardNftMetaData(rewardNft);
-        setChallengeNfts(challengeNfts);
+
+        let modifiedChallengeNfts = challengeNfts.map((nft, idx) => ({
+          ...nft,
+          owned: challengeNftsOwned[idx].length > 0,
+        }));
+
+        setChallengeNfts(modifiedChallengeNfts);
+        setChallengeNftsOwned(challengeNftsOwned.flat());
       }
     })();
   }, [challengeMetaData]);
@@ -146,7 +184,7 @@ export default function NFTChallenge() {
     });
   };
 
-  if (!challengeMetaData) return <div>Loading...</div>;
+  if (!challengeMetaData || !rewardNftMetaData) return <div>Loading...</div>;
 
   return (
     <>
@@ -163,25 +201,38 @@ export default function NFTChallenge() {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                {isConnected && (
-                  <Button variant="default" onClick={() => submitEntry()}>
-                    Submit Entry
-                  </Button>
+                {isConnected ? (
+                  <div>
+                    <Button variant="default" onClick={() => submitEntry()}>
+                      Submit Entry
+                    </Button>
+                    {challengeNftsOwned.length < challengeMetaData.challengeNfts.length && (
+                      <p className=" text-red-500 text-sm">Warning: You don&apos;t own all challenge nfts yet!</p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
+                      Connect your wallet to submit an entry!
+                    </p>
+
+                    <NearWalletConnector />
+                  </div>
                 )}
               </div>
               {isWinner ? (
-                <p className="text-gray-500 md:text-l dark:text-gray-300 mt-2">
+                <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
                   Congrats, you&apos;ve completed this challenge!
                 </p>
               ) : (
-                <p className="text-gray-500 md:text-l dark:text-gray-300 mt-2">
+                <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
                   Make sure you have all challenge pieces before submitting your entry! Submitting entries cost gas
                   whether you win or not.
                 </p>
               )}
               {errorCode && (
                 <div className="bg-red-100 text-red-500 p-4 rounded-lg">
-                  <p>
+                  <p className="text-sm">
                     Unfourtanetly your entry wasn&apos;t accepted.
                     {txHashes && (
                       <p>
