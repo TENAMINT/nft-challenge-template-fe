@@ -21,6 +21,7 @@ export enum Progress {
 
 //network config (replace testnet with mainnet or betanet)
 const provider = new providers.JsonRpcProvider({ url: "https://archival-rpc.testnet.near.org" });
+
 /**
  * Current assumptions:
  * Reward NFT already exists on blockchain
@@ -59,9 +60,11 @@ export default function ChallengeCreator({ network }: { network: Network }) {
 
   const onSubmit = async () => {
     const wallet = await selector.wallet();
+    selector;
     if (!isConnected) return false;
     const args = {
       name: name,
+      description: desc,
       challenges: challengeNfts.map((nft) => nft.id),
       termination_date: terminationDate?.getTime().toString() || Number.MAX_SAFE_INTEGER.toString(),
       winner_limit: winnerCount.toString(),

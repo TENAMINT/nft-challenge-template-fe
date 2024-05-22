@@ -1,13 +1,26 @@
-async function fetchGraphQL(operationsDoc: string, operationName: string, variables: Record<string, string>) {
-  const result = await fetch("https://graph.mintbase.xyz/mainnet", {
-    method: "POST",
-    body: JSON.stringify({
-      query: operationsDoc,
-      variables: variables,
-      operationName: operationName,
-    }),
-    headers: new Headers({ "content-type": "application/json", "mb-api-key": "anon" }),
-  });
+import { NFTContract } from "@/types/nft";
+import { fetchGraphQl } from "@mintbase-js/data";
+import { Network } from "@mintbase-js/sdk";
 
-  return await result.json();
+const query = `
+query NftContract($_eq: String = "") {
+  nft_contracts(where: {id: {_eq: $_eq}}) {
+    category
+    created_at
+    id
+    icon
+    name
+    owner_id
+    symbol
+  }
+}
+`;
+
+export async function fetchNftContract(id: string, network: Network): Promise<NFTContract | undefined> {
+  const res: {
+    data?: {
+      nft_contracts: Array<NFTContract>;
+    };
+  } = await fetchGraphQl({ query, variables: { _eq: id }, network });
+  return res.data?.nft_contracts[0];
 }

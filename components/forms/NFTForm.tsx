@@ -25,6 +25,7 @@ import { NFTContract } from "@/types/nft";
 import { fetchGraphQl } from "@mintbase-js/data";
 import { Progress } from "../ChallengeCreator";
 import { Network } from "@mintbase-js/sdk";
+import { fetchNftContract } from "@/toolkit/graphql";
 
 export default function NFTForm({
   rewardNft,
@@ -44,31 +45,6 @@ export default function NFTForm({
   network: Network;
 }) {
   const [rewardNftId, setRewardNftId] = useState(rewardNft?.id || "");
-
-  const query = `
-  query NftContract($_eq: String = "") {
-    nft_contracts(where: {id: {_eq: $_eq}}) {
-      category
-      created_at
-      id
-      icon
-      name
-      owner_id
-      symbol
-    }
-  }
-`;
-
-  async function fetchNftContract(id: string) {
-    const res: {
-      data?: {
-        nft_contracts: Array<NFTContract>;
-      };
-    } = await fetchGraphQl({ query, variables: { _eq: id }, network });
-    if (res.data?.nft_contracts[0] != null) {
-      setRewardNft(res.data.nft_contracts[0]);
-    }
-  }
 
   return (
     <div className="mx-auto max-w-md space-y-6">
@@ -119,7 +95,7 @@ export default function NFTForm({
           </div>
         </div>
         <div className="flex justify-between">
-          <Button onClick={async () => await fetchNftContract(rewardNftId)}>Next</Button>
+          <Button onClick={async () => setRewardNft(await fetchNftContract(rewardNftId, network))}>Next</Button>
         </div>
       </div>
     </div>
