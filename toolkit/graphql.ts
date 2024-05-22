@@ -24,3 +24,27 @@ export async function fetchNftContract(id: string, network: Network): Promise<NF
   } = await fetchGraphQl({ query, variables: { _eq: id }, network });
   return res.data?.nft_contracts[0];
 }
+
+export async function fetchNftContracts(nftIds: ReadonlyArray<string>, network: Network): Promise<Array<NFTContract>> {
+  const res: {
+    data?: {
+      nft_contracts: Array<NFTContract>;
+    };
+  } = await fetchGraphQl({
+    query: `
+    query NFTContractsQuery($_in: [String!] = "") {
+      nft_contracts(where: {id: {_in: $_in}}) {
+        category
+        created_at
+        id
+        icon
+        name
+        owner_id
+        symbol
+      }
+    }`,
+    variables: { _in: nftIds },
+    network,
+  });
+  return res.data?.nft_contracts || [];
+}

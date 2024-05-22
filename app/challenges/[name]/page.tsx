@@ -44,23 +44,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { NftMetadata } from "@mintbase-js/data/lib/graphql/codegen/graphql";
 import { fetchGraphQl } from "@mintbase-js/data";
-import { fetchNftContract } from "@/toolkit/graphql";
+import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
+import { NFTCarousel } from "@/components/carousel";
 
 export default function NFTChallenge() {
   const [network, setNetwork] = useState<Network>("testnet");
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();
   const [rewardNftMetaData, setRewardNftMetaData] = useState<NFTContract | null>();
-  const { isConnected } = useMbWallet();
+  const [challengeNfts, setChallengeNfts] = useState<ReadonlyArray<NFTContract>>([]);
+  const [isWinner, setIsWinner] = useState<boolean>(false);
+  const { isConnected, selector } = useMbWallet();
 
   const params = useParams<{ name: string }>();
-  const txHash = useSearchParams().get("transactionHashes");
+  const errorCode = useSearchParams().get("errorCode");
+  const txHashes = useSearchParams().get("txHashes");
 
   useEffect(() => {
     (async () => {
       const nearConnection = await connect(connectionConfig);
 
       if (params.name) {
-        const contract = new Contract(nearConnection.connection, "test_v010.supreme-squirrel.testnet", {
+        const contract = new Contract(nearConnection.connection, `${params.name}.supreme-squirrel.testnet`, {
           viewMethods: ["get_challenge_metadata"],
           changeMethods: [],
           useLocalViewExecution: true,
@@ -86,10 +90,61 @@ export default function NFTChallenge() {
   useEffect(() => {
     (async () => {
       if (challengeMetaData) {
-        setRewardNftMetaData(await fetchNftContract(challengeMetaData.rewardNft, network));
+        const [rewardNft, challengeNfts] = await Promise.all([
+          fetchNftContract(challengeMetaData.rewardNft, network),
+          fetchNftContracts(challengeMetaData.challengeNfts, network),
+        ]);
+        setRewardNftMetaData(rewardNft);
+        setChallengeNfts(challengeNfts);
       }
     })();
   }, [challengeMetaData]);
+
+  useEffect(() => {
+    (async () => {
+      if (isConnected) {
+        const wallet = await selector.wallet();
+        const accounts = await wallet.getAccounts();
+
+        const nearConnection = await connect(connectionConfig);
+        const contract = new Contract(nearConnection.connection, `${params.name}.supreme-squirrel.testnet`, {
+          viewMethods: ["check_account_is_winner"],
+          changeMethods: [],
+          useLocalViewExecution: true,
+        }) as Contract & {
+          check_account_is_winner: (args: { account_id: string }) => Promise<boolean>;
+        };
+        const isWinner = await contract.check_account_is_winner({ account_id: accounts[0].accountId });
+        setIsWinner(isWinner);
+        // fetch the user's NFTs
+      } else {
+        setIsWinner(false);
+        // show a message to connect wallet
+      }
+    })();
+  }, [isConnected]);
+
+  const submitEntry = async () => {
+    const wallet = await selector.wallet();
+
+    if (!isConnected) return;
+
+    await wallet.signAndSendTransaction({
+      receiverId: `${params.name}.supreme-squirrel.testnet`,
+      actions: [
+        {
+          type: "FunctionCall",
+          params: {
+            methodName: "initiate_claim",
+            args: {},
+            gas: "90000000000000",
+            deposit: "0",
+          },
+        },
+      ],
+      callbackUrl: `${window.location.origin}/challenges/${params.name}`,
+    });
+  };
 
   if (!challengeMetaData) return <div>Loading...</div>;
 
@@ -108,9 +163,41 @@ export default function NFTChallenge() {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Button variant="default">Submit Entry</Button>
-                <Button variant="secondary">Learn More</Button>
+                {isConnected && (
+                  <Button variant="default" onClick={() => submitEntry()}>
+                    Submit Entry
+                  </Button>
+                )}
               </div>
+              {isWinner ? (
+                <p className="text-gray-500 md:text-l dark:text-gray-300 mt-2">
+                  Congrats, you&apos;ve completed this challenge!
+                </p>
+              ) : (
+                <p className="text-gray-500 md:text-l dark:text-gray-300 mt-2">
+                  Make sure you have all challenge pieces before submitting your entry! Submitting entries cost gas
+                  whether you win or not.
+                </p>
+              )}
+              {errorCode && (
+                <div className="bg-red-100 text-red-500 p-4 rounded-lg">
+                  <p>
+                    Unfourtanetly your entry wasn&apos;t accepted.
+                    {txHashes && (
+                      <p>
+                        , you can view the transaction{" "}
+                        <a
+                          href={`https://testnet.nearblocks.io/txns/${txHashes[0]}`}
+                          className="font-medium text-blue-500"
+                        >
+                          here
+                        </a>
+                      </p>
+                    )}
+                    Make sure the challenge isn&apos;t completed and you have all the pieces.
+                  </p>
+                </div>
+              )}
             </div>
             <img
               alt={`${challengeMetaData.title} Challenge media`}
@@ -122,7 +209,7 @@ export default function NFTChallenge() {
           </div>
         </div>
       </section>
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
+      <section className="w-full py-8 md:py-24 lg:py-20 bg-gray-100 dark:bg-gray-800 justify-center">
         <div className="container px-4 md:px-6">
           <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-16">
             <div>
@@ -169,6 +256,7 @@ export default function NFTChallenge() {
                 </div>
               </div>
             </div>
+
             {rewardNftMetaData && (
               <div>
                 <h2 className="text-2xl font-bold tracking-tighter">About the Reward</h2>
@@ -197,6 +285,10 @@ export default function NFTChallenge() {
                 </div>
               </div>
             )}
+          </div>
+          <div className="flex flex-col items-center mt-8">
+            <h2 className="text-2xl font-bold tracking-tighter">Challenge fragments</h2>
+            <NFTCarousel nfts={challengeNfts} />
           </div>
         </div>
       </section>

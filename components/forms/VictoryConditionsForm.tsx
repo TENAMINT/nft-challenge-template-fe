@@ -29,6 +29,7 @@ import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
 import { Network } from "@mintbase-js/sdk";
 import { Checkbox } from "../ui/checkbox";
 import { fetchGraphQl } from "@mintbase-js/data";
+import { fetchNftContracts } from "@/toolkit/graphql";
 
 export function VictoryConditionsForm({
   setProgress,
@@ -48,31 +49,8 @@ export function VictoryConditionsForm({
   const [challengeCount, setChallengeCount] = useState(Math.max(challengeNfts.length, 1));
   const [nftIds, setNftIds] = useState<Array<string>>(challengeNfts.map((nft) => nft.id));
 
-  async function fetchNftContracts() {
-    const res: {
-      data?: {
-        nft_contracts: Array<NFTContract>;
-      };
-    } = await fetchGraphQl({
-      query: `
-      query NFTContractsQuery($_in: [String!] = "") {
-        nft_contracts(where: {id: {_in: $_in}}) {
-          id
-          name
-          symbol
-          icon
-        }
-      }`,
-      variables: { _in: nftIds },
-      network,
-    });
-    if (res.data?.nft_contracts != null) {
-      setChallengeNfts(res.data?.nft_contracts);
-    }
-  }
-
   const onNext = async () => {
-    await fetchNftContracts();
+    setChallengeNfts(await fetchNftContracts(nftIds, "testnet"));
   };
   return (
     <div className="mx-auto max-w-md space-y-6">

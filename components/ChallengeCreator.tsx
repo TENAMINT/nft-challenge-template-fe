@@ -60,7 +60,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
 
   const onSubmit = async () => {
     const wallet = await selector.wallet();
-    selector;
+
     if (!isConnected) return false;
     const args = {
       name: name,
