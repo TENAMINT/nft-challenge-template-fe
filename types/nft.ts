@@ -11,25 +11,27 @@ export type NFTContract = {
 
 // snake case cause it's pulled directly from blockchain
 export type RawNFTChallengeMetaData = {
-  title: string;
+  challenge_completed: string;
+  challenge_nft_ids: ReadonlyArray<string>;
   description: string;
-  media: string | null;
-  terminates_at: number;
-  challenge_nfts: ReadonlyArray<string>;
-  winners_count: number;
-  winner_limit: number;
+  image_link: string;
+  name: string;
+  owner_id: string;
   reward_nft: string;
-  challenge_completed: boolean;
+  termination_date_in_ns: number;
+  winner_limit: number;
+  winners_count: number;
 };
 
 export type NFTChallengeMetaData = {
-  title: string;
+  challengeCompleted: string;
+  challengeNftIds: ReadonlyArray<string>;
   description: string;
-  media: string | null;
-  terminatesAt: number | null;
-  challengeNfts: ReadonlyArray<string>;
-  winnersCount: number;
-  winnerLimit: number | null;
+  imageLink: string;
+  name: string;
+  ownerId: string;
   rewardNft: string;
-  challengeCompleted: boolean;
+  terminationDateInNs: number | null;
+  winnerLimit: number | null;
+  winnersCount: number;
 };

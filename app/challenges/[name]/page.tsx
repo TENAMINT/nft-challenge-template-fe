@@ -80,12 +80,15 @@ export default function NFTChallenge() {
         setChallengeMetaData({
           ...response,
           // convert to milliseconds
-          terminatesAt: response.terminates_at === Number.MAX_SAFE_INTEGER ? null : response.terminates_at / 1000,
+          terminationDateInNs:
+            response.termination_date_in_ns === Number.MAX_SAFE_INTEGER ? null : response.termination_date_in_ns / 1000,
           winnerLimit: response.winner_limit === Number.MAX_SAFE_INTEGER ? null : response.winner_limit,
           winnersCount: response.winners_count,
-          challengeNfts: response.challenge_nfts,
+          challengeNftIds: response.challenge_nft_ids,
           challengeCompleted: response.challenge_completed,
           rewardNft: response.reward_nft,
+          imageLink: response.image_link,
+          ownerId: response.owner_id,
         });
       }
     })();
@@ -105,11 +108,11 @@ export default function NFTChallenge() {
 
         const [rewardNft, challengeNfts, challengeNftsOwned] = await Promise.all([
           fetchNftContract(challengeMetaData.rewardNft, network),
-          fetchNftContracts(challengeMetaData.challengeNfts, network),
+          fetchNftContracts(challengeMetaData.challengeNftIds, network),
           isConnected
             ? // TODO: Change to grpahql call
               Promise.all(
-                challengeMetaData.challengeNfts.map((nft) => {
+                challengeMetaData.challengeNftIds.map((nft) => {
                   const contract = new Contract(nearConnection.connection, `${nft}`, {
                     viewMethods: ["nft_tokens_for_owner"],
                     changeMethods: [],
@@ -194,7 +197,7 @@ export default function NFTChallenge() {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                  {challengeMetaData.title} Challenge
+                  {challengeMetaData.name} Challenge
                 </h1>
                 <p className="max-w-[600px] text-gray-500 md:text-xl dark:text-gray-400">
                   {challengeMetaData.description}
@@ -206,7 +209,7 @@ export default function NFTChallenge() {
                     <Button variant="default" onClick={() => submitEntry()}>
                       Submit Entry
                     </Button>
-                    {challengeNftsOwned.length < challengeMetaData.challengeNfts.length && (
+                    {challengeNftsOwned.length < challengeMetaData.challengeNftIds.length && (
                       <p className=" text-red-500 text-sm">Warning: You don&apos;t own all challenge nfts yet!</p>
                     )}
                   </div>
@@ -251,7 +254,7 @@ export default function NFTChallenge() {
               )}
             </div>
             <img
-              alt={`${challengeMetaData.title} Challenge media`}
+              alt={`${challengeMetaData.name} Challenge media`}
               className="mx-auto aspect-video overflow-hidden rounded-xl object-cover"
               height="400"
               src="https://pbs.twimg.com/media/FmxbeaCaMAYAvKG?format=jpg&name=4096x4096"
@@ -269,14 +272,14 @@ export default function NFTChallenge() {
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Termination Date</p>
                   <p className="font-medium">
-                    {challengeMetaData.terminatesAt
-                      ? new Date(challengeMetaData.terminatesAt).toLocaleString()
+                    {challengeMetaData.terminationDateInNs
+                      ? new Date(challengeMetaData.terminationDateInNs).toLocaleString()
                       : "Never ends"}
                   </p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Challenge Pieces</p>
-                  <p className="font-medium">{challengeMetaData.challengeNfts.length}</p>
+                  <p className="font-medium">{challengeMetaData.challengeNftIds.length}</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Winners</p>
