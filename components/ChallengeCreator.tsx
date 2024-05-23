@@ -63,12 +63,15 @@ export default function ChallengeCreator({ network }: { network: Network }) {
 
     if (!isConnected) return false;
     const args = {
-      name: name,
+      id_prefix: name,
+      name,
       description: desc,
-      challenges: challengeNfts.map((nft) => nft.id),
-      termination_date: terminationDate?.getTime().toString() || Number.MAX_SAFE_INTEGER.toString(),
-      winner_limit: winnerCount.toString(),
+      image_link: "https://www.creativeuncut.com/gallery-03/art/sa-sonic-05.jpg",
       reward_nft: rewardNft!.id,
+      challenge_nft_ids: challengeNfts.map((nft) => nft.id),
+      // TODO: Convert to nano seconds
+      _termination_date_in_ns: terminationDate?.getTime().toString() || Number.MAX_SAFE_INTEGER.toString(),
+      _winner_limit: winnerCount.toString(),
     };
 
     const res = await wallet.signAndSendTransaction({
