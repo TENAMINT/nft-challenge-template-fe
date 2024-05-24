@@ -72,10 +72,8 @@ export default function NFTForm({
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div className="space-y-2 text-left">
-        <h2 className="text-xl font-semibold">Choose your reward NFT</h2>
-        <p className="text-gray-500 dark:text-gray-400">
-          Enter the ID of the NFT you would like to use as a reward for completing the challenge.
-        </p>
+        <h2 className="text-xl font-semibold">Choose your challenge details!</h2>
+        <p className="text-gray-500 dark:text-gray-400">Enter some details about your challenge below.</p>
       </div>
       <div className="space-y-6">
         <div>

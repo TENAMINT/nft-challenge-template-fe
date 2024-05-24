@@ -61,3 +61,5 @@ export async function fetchNftContracts(nftIds: ReadonlyArray<string>, network: 
   }
   return challengeNfts;
 }
+
+// record how much gas is

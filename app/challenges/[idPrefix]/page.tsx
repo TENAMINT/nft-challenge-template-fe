@@ -197,9 +197,15 @@ export default function NFTChallenge() {
           <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 xl:grid-cols-[1fr_600px]">
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                  {challengeMetaData.name} Challenge
-                </h1>
+                <a
+                  href={`https://testnet.nearblocks.io/address/${params.idPrefix}.supreme-squirrel.testnet`}
+                  className="font-medium hover:text-blue-500"
+                >
+                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                    {challengeMetaData.name} Challenge
+                  </h1>
+                </a>
+
                 <p className="max-w-[600px] text-gray-500 md:text-xl dark:text-gray-400">
                   {challengeMetaData.description}
                 </p>
@@ -256,12 +262,12 @@ export default function NFTChallenge() {
             </div>
             <img
               alt={`${challengeMetaData.name} Challenge media`}
-              className="mx-auto aspect-square overflow-hidden rounded-2xl object-cover"
+              className="mx-auto aspect-video overflow-hidden rounded-2xl object-cover"
               height="400"
               src={
                 challengeMetaData.imageLink || "https://pbs.twimg.com/media/FmxbeaCaMAYAvKG?format=jpg&name=4096x4096"
               }
-              width="450"
+              width="650"
             />
           </div>
         </div>
