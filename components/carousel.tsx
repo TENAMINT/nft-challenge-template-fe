@@ -22,7 +22,7 @@ import { NFTContract } from "@/types/nft";
 
 export function NFTCarousel(props: { nfts: ReadonlyArray<NFTContract> }) {
   return (
-    <Carousel className="w-1/2 max-w-4xl">
+    <Carousel className="w-1/3 max-w-4xl mt-0">
       <CarouselContent>
         {props.nfts.map((nft) => (
           <CarouselItem key={nft.id}>

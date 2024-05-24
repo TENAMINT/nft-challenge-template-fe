@@ -33,6 +33,8 @@ export default function ChallengeCreator({ network }: { network: Network }) {
   const [rewardNft, setRewardNft] = useState<NFTContract | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
   const [desc, setDesc] = useState<string | undefined>(undefined);
+  const [idPrefix, setIdPrefix] = useState<string | undefined>(undefined);
+  const [mediaLink, setMediaLink] = useState<string | undefined>(undefined);
   const [challengeNfts, setChallengeNfts] = useState<Array<NFTContract>>([]);
   const [terminationDate, setTerminationDate] = useState<Date | undefined>(undefined);
   const [creatorCanEndChallenge, setCreatorCanEndChallenge] = useState(false);
@@ -62,15 +64,23 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     const wallet = await selector.wallet();
 
     if (!isConnected) return false;
+
+    let terminationDateStr = terminationDate?.getTime().toString();
+    if (terminationDate == null) {
+      terminationDateStr = Number.MAX_SAFE_INTEGER.toString();
+    } else {
+      terminationDateStr = terminationDateStr + "000000";
+    }
+
     const args = {
-      id_prefix: name,
+      id_prefix: idPrefix, // change
       name,
       description: desc,
-      image_link: "https://www.creativeuncut.com/gallery-03/art/sa-sonic-05.jpg",
+      image_link: mediaLink,
       reward_nft: rewardNft!.id,
       challenge_nft_ids: challengeNfts.map((nft) => nft.id),
       // TODO: Convert to nano seconds
-      _termination_date_in_ns: terminationDate?.getTime().toString() || Number.MAX_SAFE_INTEGER.toString(),
+      _termination_date_in_ns: terminationDateStr,
       _winner_limit: winnerCount.toString(),
     };
 
@@ -87,7 +97,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
           },
         },
       ],
-      callbackUrl: `${window.location.origin}/challenges/${name}`,
+      callbackUrl: `${window.location.origin}/challenges/${idPrefix}`,
     });
 
     if (res != null) {
@@ -98,12 +108,24 @@ export default function ChallengeCreator({ network }: { network: Network }) {
   const prefix =
     progress > Progress.NFTSearch ? (
       <div className="flex items-start space-x-4 my-5 ">
-        {rewardNft?.icon != null && (
+        {mediaLink != null ? (
           <img
             alt="NFT Icon"
             className="rounded-md"
             height="120"
-            src={rewardNft.icon}
+            src={mediaLink}
+            style={{
+              aspectRatio: "80/80",
+              objectFit: "cover",
+            }}
+            width="120"
+          />
+        ) : (
+          <img
+            alt="NFT Icon"
+            className="rounded-md"
+            height="120"
+            src={rewardNft?.icon}
             style={{
               aspectRatio: "80/80",
               objectFit: "cover",
@@ -137,7 +159,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
           {maxProgress >= Progress.SetTerminationRules && (
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
               {/* <CalendarDaysIcon className="w-4 h-4" /> */}
-              <span>{terminationDate != null ? `Ends on ${terminationDate.toString()}` : `Never ends`}</span>
+              <span>{terminationDate != null ? `Ends on ${terminationDate.toLocaleString()}` : `Never ends`}</span>
             </div>
           )}
           {maxProgress >= Progress.SetTerminationRules && (
@@ -168,6 +190,10 @@ export default function ChallengeCreator({ network }: { network: Network }) {
             setName={setName}
             desc={desc}
             setDesc={setDesc}
+            idPrefix={idPrefix}
+            setIdPrefix={setIdPrefix}
+            mediaLink={mediaLink}
+            setMediaLink={setMediaLink}
           />
         </div>
       );

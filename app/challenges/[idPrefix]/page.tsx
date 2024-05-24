@@ -59,7 +59,7 @@ export default function NFTChallenge() {
 
   const { isConnected, selector } = useMbWallet();
 
-  const params = useParams<{ name: string }>();
+  const params = useParams<{ idPrefix: string }>();
   const errorCode = useSearchParams().get("errorCode");
   const txHashes = useSearchParams().get("txHashes");
 
@@ -67,8 +67,8 @@ export default function NFTChallenge() {
     (async () => {
       const nearConnection = await connect(connectionConfig);
 
-      if (params.name) {
-        const contract = new Contract(nearConnection.connection, `${params.name}.supreme-squirrel.testnet`, {
+      if (params.idPrefix) {
+        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.supreme-squirrel.testnet`, {
           viewMethods: ["get_challenge_metadata"],
           changeMethods: [],
           useLocalViewExecution: true,
@@ -80,8 +80,10 @@ export default function NFTChallenge() {
         setChallengeMetaData({
           ...response,
           // convert to milliseconds
-          terminationDateInNs:
-            response.termination_date_in_ns === Number.MAX_SAFE_INTEGER ? null : response.termination_date_in_ns / 1000,
+          terminationDateInMs:
+            response.termination_date_in_ns === Number.MAX_SAFE_INTEGER
+              ? null
+              : response.termination_date_in_ns / 1000000,
           winnerLimit: response.winner_limit === Number.MAX_SAFE_INTEGER ? null : response.winner_limit,
           winnersCount: response.winners_count,
           challengeNftIds: response.challenge_nft_ids,
@@ -129,7 +131,6 @@ export default function NFTChallenge() {
             : Promise.resolve([]),
         ]);
         setRewardNftMetaData(rewardNft);
-
         let modifiedChallengeNfts = challengeNfts.map((nft, idx) => ({
           ...nft,
           owned: challengeNftsOwned[idx].length > 0,
@@ -148,7 +149,7 @@ export default function NFTChallenge() {
         const accounts = await wallet.getAccounts();
 
         const nearConnection = await connect(connectionConfig);
-        const contract = new Contract(nearConnection.connection, `${params.name}.supreme-squirrel.testnet`, {
+        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.supreme-squirrel.testnet`, {
           viewMethods: ["check_account_is_winner"],
           changeMethods: [],
           useLocalViewExecution: true,
@@ -171,7 +172,7 @@ export default function NFTChallenge() {
     if (!isConnected) return;
 
     await wallet.signAndSendTransaction({
-      receiverId: `${params.name}.supreme-squirrel.testnet`,
+      receiverId: `${params.idPrefix}.supreme-squirrel.testnet`,
       actions: [
         {
           type: "FunctionCall",
@@ -183,11 +184,11 @@ export default function NFTChallenge() {
           },
         },
       ],
-      callbackUrl: `${window.location.origin}/challenges/${params.name}`,
+      callbackUrl: `${window.location.origin}/challenges/${params.idPrefix}`,
     });
   };
 
-  if (!challengeMetaData || !rewardNftMetaData) return <div>Loading...</div>;
+  if (!challengeMetaData) return <div>Loading...</div>;
 
   return (
     <>
@@ -255,16 +256,18 @@ export default function NFTChallenge() {
             </div>
             <img
               alt={`${challengeMetaData.name} Challenge media`}
-              className="mx-auto aspect-video overflow-hidden rounded-xl object-cover"
+              className="mx-auto aspect-square overflow-hidden rounded-2xl object-cover"
               height="400"
-              src="https://pbs.twimg.com/media/FmxbeaCaMAYAvKG?format=jpg&name=4096x4096"
-              width="600"
+              src={
+                challengeMetaData.imageLink || "https://pbs.twimg.com/media/FmxbeaCaMAYAvKG?format=jpg&name=4096x4096"
+              }
+              width="450"
             />
           </div>
         </div>
       </section>
       <section className="w-full py-8 md:py-24 lg:py-20 bg-gray-100 dark:bg-gray-800 justify-center">
-        <div className="container px-4 md:px-6">
+        <div className="px-4 md:px-6">
           <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-16">
             <div>
               <h2 className="text-2xl font-bold tracking-tighter">Challenge Details</h2>
@@ -272,8 +275,8 @@ export default function NFTChallenge() {
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Termination Date</p>
                   <p className="font-medium">
-                    {challengeMetaData.terminationDateInNs
-                      ? new Date(challengeMetaData.terminationDateInNs).toLocaleString()
+                    {challengeMetaData.terminationDateInMs
+                      ? new Date(challengeMetaData.terminationDateInMs).toLocaleString()
                       : "Never ends"}
                   </p>
                 </div>
@@ -340,7 +343,7 @@ export default function NFTChallenge() {
               </div>
             )}
           </div>
-          <div className="flex flex-col items-center mt-8">
+          <div className="flex flex-col items-center mt-12">
             <h2 className="text-2xl font-bold tracking-tighter">Challenge fragments</h2>
             <NFTCarousel nfts={challengeNfts} />
           </div>

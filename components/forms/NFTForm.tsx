@@ -35,6 +35,10 @@ export default function NFTForm({
   setName,
   desc,
   setDesc,
+  idPrefix,
+  setIdPrefix,
+  mediaLink,
+  setMediaLink,
 }: {
   rewardNft: NFTContract | undefined;
   setRewardNft: Dispatch<SetStateAction<NFTContract | undefined>>;
@@ -42,9 +46,28 @@ export default function NFTForm({
   setName: Dispatch<SetStateAction<string | undefined>>;
   desc: string | undefined;
   setDesc: Dispatch<SetStateAction<string | undefined>>;
+  idPrefix: string | undefined;
+  setIdPrefix: Dispatch<SetStateAction<string | undefined>>;
+  mediaLink: string | undefined;
+  setMediaLink: Dispatch<SetStateAction<string | undefined>>;
   network: Network;
 }) {
   const [rewardNftId, setRewardNftId] = useState(rewardNft?.id || "");
+
+  const onSubmit = async () => {
+    if (!rewardNftId || !name || !idPrefix || !desc) {
+      alert("Please fill all necessary details.");
+      return;
+    }
+
+    const nft = await fetchNftContract(rewardNftId, network);
+    if (nft == null) {
+      alert("NFT not found");
+      return;
+    }
+
+    setRewardNft(nft);
+  };
 
   return (
     <div className="mx-auto max-w-md space-y-6">
@@ -69,6 +92,19 @@ export default function NFTForm({
           </div>
         </div>
         <div>
+          <label htmlFor="nft-id">Challenge ID Prefix</label>
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Input
+                value={idPrefix}
+                onChange={(e) => setIdPrefix(e.target.value)}
+                id="id-prefix"
+                placeholder="Enter a prefix for the challenge ID"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
           <label htmlFor="nft-id">Challenge Description</label>
           <div className="grid gap-4">
             <div className="space-y-2">
@@ -77,6 +113,19 @@ export default function NFTForm({
                 onChange={(e) => setDesc(e.target.value)}
                 id="desc"
                 placeholder="Enter a description for the challenge"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <label htmlFor="nft-id">Challenge Media Link</label>
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Input
+                value={mediaLink}
+                onChange={(e) => setMediaLink(e.target.value)}
+                id="media-link"
+                placeholder="An optional media link for the challenge"
               />
             </div>
           </div>
@@ -95,7 +144,7 @@ export default function NFTForm({
           </div>
         </div>
         <div className="flex justify-between">
-          <Button onClick={async () => setRewardNft(await fetchNftContract(rewardNftId, network))}>Next</Button>
+          <Button onClick={onSubmit}>Next</Button>
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import { NFTContract } from "@/types/nft";
 import { fetchGraphQl } from "@mintbase-js/data";
+import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
 import { Network } from "@mintbase-js/sdk";
+import _ from "lodash";
 
 const query = `
 query NftContract($_eq: String = "") {
@@ -26,6 +28,9 @@ export async function fetchNftContract(id: string, network: Network): Promise<NF
 }
 
 export async function fetchNftContracts(nftIds: ReadonlyArray<string>, network: Network): Promise<Array<NFTContract>> {
+  let frequencies = nftIds.reduce(function (value, value2) {
+    return value[value2] ? ++value[value2] : (value[value2] = 1), value;
+  }, {} as Record<string, number>);
   const res: {
     data?: {
       nft_contracts: Array<NFTContract>;
@@ -46,5 +51,13 @@ export async function fetchNftContracts(nftIds: ReadonlyArray<string>, network: 
     variables: { _in: nftIds },
     network,
   });
-  return res.data?.nft_contracts || [];
+  if (res.data == null) return [];
+
+  let challengeNfts: Array<NFTContract> = [];
+  for (const nft of res.data.nft_contracts) {
+    for (let i = 0; i < frequencies[nft.id]; i++) {
+      challengeNfts = [...challengeNfts, nft];
+    }
+  }
+  return challengeNfts;
 }

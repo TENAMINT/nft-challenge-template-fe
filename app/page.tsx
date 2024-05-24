@@ -33,7 +33,7 @@ export default function Home() {
           value={challengeName}
           onChange={(e) => setChallengeName(e.target.value)}
           id="nft-id"
-          placeholder="Enter the the challenge name"
+          placeholder="Enter the the challenge id prefix"
         />
         <Link className="mt-5 block" href={`/challenges/${challengeName}`}>
           <Button>

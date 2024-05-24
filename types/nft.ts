@@ -7,6 +7,7 @@ export type NFTContract = {
   symbol: string;
   owner_id: string;
   owned?: boolean;
+  count: number | undefined;
 };
 
 // snake case cause it's pulled directly from blockchain
@@ -31,7 +32,7 @@ export type NFTChallengeMetaData = {
   name: string;
   ownerId: string;
   rewardNft: string;
-  terminationDateInNs: number | null;
+  terminationDateInMs: number | null;
   winnerLimit: number | null;
   winnersCount: number;
 };
