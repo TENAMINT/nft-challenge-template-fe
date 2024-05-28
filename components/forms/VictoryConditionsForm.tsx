@@ -165,7 +165,7 @@ export function VictoryConditionsForm({
         className="mr-4 w-auto"
         variant="outline"
         onClick={() => {
-          setProgress(Progress.NFTSearch);
+          setProgress(Progress.RewardNFTDetails);
         }}
       >
         Previous
