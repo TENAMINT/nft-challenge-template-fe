@@ -28,9 +28,6 @@ import { Network } from "@mintbase-js/sdk";
 import { fetchNftContract } from "@/toolkit/graphql";
 
 export default function NFTForm({
-  rewardNft,
-  setRewardNft,
-  network,
   name,
   setName,
   desc,
@@ -39,9 +36,8 @@ export default function NFTForm({
   setIdPrefix,
   mediaLink,
   setMediaLink,
+  setProgress,
 }: {
-  rewardNft: NFTContract | undefined;
-  setRewardNft: Dispatch<SetStateAction<NFTContract | undefined>>;
   name: string | undefined;
   setName: Dispatch<SetStateAction<string | undefined>>;
   desc: string | undefined;
@@ -50,25 +46,15 @@ export default function NFTForm({
   setIdPrefix: Dispatch<SetStateAction<string | undefined>>;
   mediaLink: string | undefined;
   setMediaLink: Dispatch<SetStateAction<string | undefined>>;
-  network: Network;
+  setProgress: Dispatch<SetStateAction<Progress>>;
 }) {
-  const [rewardNftId, setRewardNftId] = useState(rewardNft?.id || "");
-
   const onSubmit = async () => {
-    if (!rewardNftId || !name || !idPrefix || !desc) {
+    if (!name || !desc || !mediaLink || !idPrefix) {
       alert("Please fill all necessary details.");
       return;
     }
-
-    const nft = await fetchNftContract(rewardNftId, network);
-    if (nft == null) {
-      alert("NFT not found");
-      return;
-    }
-
-    setRewardNft(nft);
+    setProgress(Progress.RewardNFTDetails);
   };
-
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div className="space-y-2 text-left">
@@ -124,19 +110,6 @@ export default function NFTForm({
                 onChange={(e) => setMediaLink(e.target.value)}
                 id="media-link"
                 placeholder="An optional media link for the challenge"
-              />
-            </div>
-          </div>
-        </div>
-        <div>
-          <label htmlFor="nft-id">Reward NFT ID</label>
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <Input
-                value={rewardNftId}
-                onChange={(e) => setRewardNftId(e.target.value)}
-                id="nft-id"
-                placeholder="Enter the NFT ID"
               />
             </div>
           </div>

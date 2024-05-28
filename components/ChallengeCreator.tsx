@@ -1,5 +1,5 @@
 import NFTForm from "@/components/forms/NFTForm";
-import { NFTContract } from "@/types/nft";
+import { NFTContract, NFTMetaData } from "@/types/nft";
 import { useEffect, useState } from "react";
 import { VictoryConditionsForm } from "./forms/VictoryConditionsForm";
 import { TerminationRulesForm } from "./forms/TerminationRulesForm";
@@ -10,17 +10,16 @@ import { MintbaseWalletContextProvider, useMbWallet } from "@mintbase-js/react";
 import { WalletSelector, setupWalletSelector } from "@near-wallet-selector/core";
 import { providers } from "near-api-js";
 import BigNumber from "bignumber.js";
+import RewardNFTForm from "./forms/RewardNFTForm";
 
 export enum Progress {
-  NFTSearch,
+  ChallengeDetails,
+  RewardNFTDetails,
   SetChallenges,
   SetTerminationRules,
   CreateContract,
   ChallengeCreated,
 }
-
-//network config (replace testnet with mainnet or betanet)
-const provider = new providers.JsonRpcProvider({ url: "https://archival-rpc.testnet.near.org" });
 
 /**
  * Current assumptions:
@@ -29,8 +28,13 @@ const provider = new providers.JsonRpcProvider({ url: "https://archival-rpc.test
  *
  */
 export default function ChallengeCreator({ network }: { network: Network }) {
-  const [progress, setProgress] = useState<Progress>(Progress.NFTSearch);
+  const [progress, setProgress] = useState<Progress>(Progress.ChallengeDetails);
+  // Reward Info
   const [rewardNft, setRewardNft] = useState<NFTContract | undefined>(undefined);
+  const [rewardTitle, setRewardTitle] = useState<string | undefined>(undefined);
+  const [rewardDesc, setRewardDesc] = useState<string | undefined>(undefined);
+  const [rewardMediaLink, setRewardMediaLink] = useState<string | undefined>(undefined);
+
   const [name, setName] = useState<string | undefined>(undefined);
   const [desc, setDesc] = useState<string | undefined>(undefined);
   const [idPrefix, setIdPrefix] = useState<string | undefined>(undefined);
@@ -39,7 +43,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
   const [terminationDate, setTerminationDate] = useState<Date | undefined>(undefined);
   const [creatorCanEndChallenge, setCreatorCanEndChallenge] = useState(false);
   const [winnerCount, setWinnerCount] = useState(Number.MAX_SAFE_INTEGER);
-  const [maxProgress, setMaxProgress] = useState(Progress.NFTSearch);
+  const [maxProgress, setMaxProgress] = useState(Progress.ChallengeDetails);
   const { isConnected, selector, connect, activeAccountId } = useMbWallet();
 
   useEffect(() => {
@@ -82,6 +86,12 @@ export default function ChallengeCreator({ network }: { network: Network }) {
       // TODO: Convert to nano seconds
       _termination_date_in_ns: terminationDateStr,
       _winner_limit: winnerCount.toString(),
+      reward_token_metadata: {
+        title: rewardTitle!,
+        description: rewardDesc!,
+        media: rewardMediaLink!,
+        copies: winnerCount,
+      } as NFTMetaData,
     };
 
     const res = await wallet.signAndSendTransaction({
@@ -104,9 +114,9 @@ export default function ChallengeCreator({ network }: { network: Network }) {
       setProgress(Progress.ChallengeCreated);
     }
   };
-
+  console.log(mediaLink, "mediaLink");
   const prefix =
-    progress > Progress.NFTSearch ? (
+    progress > Progress.ChallengeDetails ? (
       <div className="flex items-start space-x-4 my-5 ">
         {mediaLink != null ? (
           <img
@@ -173,7 +183,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     ) : null;
 
   switch (progress) {
-    case Progress.NFTSearch:
+    case Progress.ChallengeDetails:
       return !isConnected ? (
         <div className="flex flex-col items-center justify-center">
           <div className="mb-6">You`&apos;ll need to connect your NEAR wallet to create a challenge.</div>
@@ -183,9 +193,6 @@ export default function ChallengeCreator({ network }: { network: Network }) {
         <div>
           {prefix}
           <NFTForm
-            rewardNft={rewardNft}
-            setRewardNft={setRewardNft}
-            network={network}
             name={name}
             setName={setName}
             desc={desc}
@@ -194,9 +201,29 @@ export default function ChallengeCreator({ network }: { network: Network }) {
             setIdPrefix={setIdPrefix}
             mediaLink={mediaLink}
             setMediaLink={setMediaLink}
+            setProgress={setProgress}
           />
         </div>
       );
+    case Progress.RewardNFTDetails:
+      return (
+        <div>
+          {prefix}
+          <RewardNFTForm
+            rewardNft={rewardNft}
+            setRewardNft={setRewardNft}
+            network={network}
+            rewardTitle={rewardTitle}
+            setRewardTitle={setRewardTitle}
+            rewardDescription={rewardDesc}
+            setRewardDescription={setRewardDesc}
+            rewardMediaLink={rewardMediaLink}
+            setRewardMediaLink={setRewardMediaLink}
+            setProgress={setProgress}
+          />
+        </div>
+      );
+
     case Progress.SetChallenges:
       return (
         <div>

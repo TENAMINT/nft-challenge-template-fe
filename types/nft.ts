@@ -36,3 +36,29 @@ export type NFTChallengeMetaData = {
   winnerLimit: number | null;
   winnersCount: number;
 };
+
+export type NFTMetaData = {
+  /// the Title for this token. ex. "Arch Nemesis: Mail Carrier" or "Parcel 5055"
+  title: String;
+  /// free-form description of this token.
+  description: String;
+  /// URL to associated media, preferably to decentralized, content-addressed storage
+  media: String;
+  /// Base64-encoded sha256 hash of content referenced by the `media` field.
+  /// Required if `media` is included. Type may be wrong
+  media_hash?: String;
+  /// number of copies of this set of metadata in existence when token was minted.
+  copies: number;
+  /// ISO 8601 datetime when token expires.
+  expires_at?: String;
+  /// ISO 8601 datetime when token starts being valid.
+  starts_at?: String;
+  /// When token was last updated, Unix epoch in milliseconds
+  extra?: String;
+  /// URL to an off-chain JSON file with more info. The Mintbase Indexer refers
+  /// to this field as `thing_id` or sometimes, `meta_id`.
+  reference?: String;
+  /// Base64-encoded sha256 hash of JSON from reference field. Required if
+  /// `reference` is included.
+  reference_hash?: String;
+};
