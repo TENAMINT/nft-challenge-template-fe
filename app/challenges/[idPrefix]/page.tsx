@@ -220,7 +220,7 @@ export default function NFTChallenge() {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <a
-                  href={`https://testnet.nearblocks.io/address/${params.idPrefix}.tenamint-challenge.near`}
+                  href={`https://nearblocks.io/address/${params.idPrefix}.tenamint-challenge.near`}
                   className="font-medium hover:text-blue-500"
                 >
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
@@ -288,10 +288,7 @@ export default function NFTChallenge() {
                     {txHashes && (
                       <p>
                         , you can view the transaction{" "}
-                        <a
-                          href={`https://testnet.nearblocks.io/txns/${txHashes[0]}`}
-                          className="font-medium text-blue-500"
-                        >
+                        <a href={`https://nearblocks.io/txns/${txHashes[0]}`} className="font-medium text-blue-500">
                           here
                         </a>
                       </p>
@@ -344,7 +341,7 @@ export default function NFTChallenge() {
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Reward NFT</p>
                   <a
-                    href={`https://testnet.nearblocks.io/address/${challengeMetaData.rewardNft}`}
+                    href={`https://nearblocks.io/address/${challengeMetaData.rewardNft}`}
                     className="font-medium text-blue-500"
                   >
                     {challengeMetaData.rewardNft}
