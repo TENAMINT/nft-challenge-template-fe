@@ -157,6 +157,7 @@ export default function NFTChallenge() {
       if (isConnected) {
         setLoading(true);
         const wallet = await selector.wallet();
+
         const accounts = await wallet.getAccounts();
 
         // const nearConnection = await connect(connectionConfig);
@@ -205,6 +206,7 @@ export default function NFTChallenge() {
       const accounts = await wallet.getAccounts();
       await create(accounts[0].accountId);
       setIsWinner(true);
+      setWinnerCount(winnerCount + 1);
     }
   };
 
@@ -257,13 +259,23 @@ export default function NFTChallenge() {
                 )}
               </div>
               {isWinner ? (
-                <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
-                  Congrats, you&apos;ve completed this challenge! Check your{" "}
-                  <a href="https://wallet.mintbase.xyz/" target="_blank">
-                    mintbase wallet
-                  </a>{" "}
-                  on May 31st to collect your winnings.
-                </p>
+                <div>
+                  <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
+                    Congrats, you&apos;ve completed this challenge! Check your{" "}
+                    <a href="https://wallet.mintbase.xyz/" className="text-blue-500" target="_blank">
+                      mintbase wallet
+                    </a>{" "}
+                    on May 31st to collect your winnings.
+                  </p>
+                  <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
+                    {" "}
+                    Grand prize winner will be announced in the
+                    <a href="https://t.me/+50YY69ypVFc1ZDcx" className="text-blue-500 font-bold" target="_blank">
+                      {" "}
+                      TENAMINT Telegram channel
+                    </a>
+                  </p>
+                </div>
               ) : (
                 <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
                   Make sure you have all challenge pieces before submitting your entry!
@@ -370,10 +382,6 @@ export default function NFTChallenge() {
                       <p className="text-gray-500 dark:text-gray-400">The reward for the challenge</p>
                     </div>
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    The Pixel Art Genesis NFT is a limited edition piece created specifically for this challenge. It
-                    features a one-of-a-kind pixel art design and will be awarded to the top 10 winners.
-                  </p>
                 </div>
               </div>
             )}
