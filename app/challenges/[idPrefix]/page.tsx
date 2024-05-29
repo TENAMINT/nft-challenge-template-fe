@@ -57,11 +57,10 @@ export default function NFTChallenge() {
   const [challengeNfts, setChallengeNfts] = useState<ReadonlyArray<NFTContract>>([]);
   const [challengeNftsOwned, setChallengeNftsOwned] = useState<ReadonlyArray<NftContracts>>([]);
   const [isWinner, setIsWinner] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [winnerCount, setWinnerCount] = useState(0);
 
   const { isConnected, selector } = useMbWallet();
-
-  console.log(challengeNfts, "tester");
 
   const params = useParams<{ idPrefix: string }>()!;
   const errorCode = useSearchParams()!.get("errorCode");
@@ -71,7 +70,7 @@ export default function NFTChallenge() {
     (async () => {
       const [nearConnection] = await Promise.all([connect(connectionConfig)]);
       const winners = await getNumOfWinners();
-      console.log(winners, "winners");
+
       setWinnerCount(winners);
       if (params.idPrefix) {
         const contract = new Contract(nearConnection.connection, `${params.idPrefix}.tenamint-challenge.near`, {
@@ -156,6 +155,7 @@ export default function NFTChallenge() {
   useEffect(() => {
     (async () => {
       if (isConnected) {
+        setLoading(true);
         const wallet = await selector.wallet();
         const accounts = await wallet.getAccounts();
 
@@ -170,6 +170,8 @@ export default function NFTChallenge() {
         // const isWinner = await contract.check_account_is_winner({ account_id: accounts[0].accountId });
         const isWinner = await checkIfAccountIsWinner(accounts[0].accountId);
         setIsWinner(isWinner);
+        setLoading(false);
+
         // fetch the user's NFTs
       } else {
         setIsWinner(false);
@@ -198,7 +200,6 @@ export default function NFTChallenge() {
     //   ],
     //   callbackUrl: `${window.location.origin}/challenges/${params.idPrefix}`,
     // });
-    console.log("in here!");
     if (challengeNftsOwned.length === challengeMetaData!.challengeNftIds.length) {
       const wallet = await selector.wallet();
       const accounts = await wallet.getAccounts();
@@ -234,10 +235,12 @@ export default function NFTChallenge() {
                   <div>
                     <Button
                       variant="default"
-                      disabled={challengeNftsOwned.length < challengeMetaData.challengeNftIds.length}
+                      disabled={
+                        challengeNftsOwned.length < challengeMetaData.challengeNftIds.length || isWinner || loading
+                      }
                       onClick={() => submitEntry()}
                     >
-                      Complete Challenge
+                      {loading ? "Loading..." : "Complete Challenge"}
                     </Button>
                     {challengeNftsOwned.length < challengeMetaData.challengeNftIds.length && (
                       <p className=" text-red-500 text-sm">Warning: You don&apos;t own all challenge nfts yet!</p>
@@ -245,7 +248,7 @@ export default function NFTChallenge() {
                   </div>
                 ) : (
                   <div>
-                    <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
+                    <p className="text-gray-500 md:text-l font-bold dark:text-gray-300 mt-2">
                       Connect your wallet to submit an entry!
                     </p>
 
@@ -255,7 +258,11 @@ export default function NFTChallenge() {
               </div>
               {isWinner ? (
                 <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
-                  Congrats, you&apos;ve completed this challenge!
+                  Congrats, you&apos;ve completed this challenge! Check your{" "}
+                  <a href="https://wallet.mintbase.xyz/" target="_blank">
+                    mintbase wallet
+                  </a>{" "}
+                  on May 31st to collect your winnings.
                 </p>
               ) : (
                 <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">

@@ -113,7 +113,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
       setProgress(Progress.ChallengeCreated);
     }
   };
-  console.log(mediaLink, "mediaLink");
+
   const prefix =
     progress > Progress.ChallengeDetails ? (
       <div className="flex items-start space-x-4 my-5 ">
