@@ -21,20 +21,26 @@ import { CarouselItem, CarouselContent, CarouselPrevious, CarouselNext, Carousel
 import { NFTContract } from "@/types/nft";
 
 export function NFTCarousel(props: { nfts: ReadonlyArray<NFTContract> }) {
+  const imageMap = {
+    0: "https://i.ibb.co/xL20HwJ/photo-2024-05-29-13-59-47.jpg",
+    1: "https://i.ibb.co/mFZK618/photo-2024-05-29-13-56-09.jpg",
+    2: "https://i.ibb.co/sRMkg6F/photo-2024-05-29-13-52-13.jpg",
+  } as Record<number, string>;
+
   return (
     <Carousel className="w-1/3 max-w-4xl mt-0">
       <CarouselContent>
-        {props.nfts.map((nft) => (
+        {props.nfts.map((nft, key) => (
           <CarouselItem key={nft.id}>
             <div className="p-4">
               <img
                 alt="NFT"
                 className="rounded-lg object-cover w-full"
                 height="300"
-                src={nft.icon}
+                src={imageMap[key]}
                 style={{
                   aspectRatio: "400/300",
-                  objectFit: "cover",
+                  objectFit: "contain",
                 }}
                 width="400"
               />

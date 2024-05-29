@@ -50,7 +50,7 @@ export function VictoryConditionsForm({
   const [nftIds, setNftIds] = useState<Array<string>>(challengeNfts.map((nft) => nft.id));
 
   const onNext = async () => {
-    setChallengeNfts(await fetchNftContracts(nftIds, "testnet"));
+    setChallengeNfts(await fetchNftContracts(nftIds, "mainnet"));
   };
   return (
     <div className="mx-auto max-w-md space-y-6">

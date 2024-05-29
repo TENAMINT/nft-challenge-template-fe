@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "MONGODB_URI=mongodb+srv://shakiran:uEc1J7Zx8plaiHdT@scavenger-hunt.mpwg8ad.mongodb.net/?retryWrites=true&w=majority&appName=scavenger-hunt next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -33,6 +33,7 @@
     "i": "^0.3.7",
     "lodash": "^4.17.21",
     "lucide-react": "^0.378.0",
+    "mongodb": "^6.6.2",
     "near-api-js": "^4.0.1",
     "next": "14.2.3",
     "npm": "^10.8.0",

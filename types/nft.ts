@@ -48,7 +48,7 @@ export type NFTMetaData = {
   /// Required if `media` is included. Type may be wrong
   media_hash?: String;
   /// number of copies of this set of metadata in existence when token was minted.
-  copies: number;
+  copies?: number;
   /// ISO 8601 datetime when token expires.
   expires_at?: String;
   /// ISO 8601 datetime when token starts being valid.

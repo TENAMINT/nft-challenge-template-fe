@@ -90,12 +90,11 @@ export default function ChallengeCreator({ network }: { network: Network }) {
         title: rewardTitle!,
         description: rewardDesc!,
         media: rewardMediaLink!,
-        copies: winnerCount,
       } as NFTMetaData,
     };
 
     const res = await wallet.signAndSendTransaction({
-      receiverId: "supreme-squirrel.testnet",
+      receiverId: "tenamint-challenge.near",
       actions: [
         {
           type: "FunctionCall",

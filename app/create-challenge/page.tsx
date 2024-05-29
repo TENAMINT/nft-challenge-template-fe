@@ -10,7 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { useMbWallet } from "@mintbase-js/react";
 
 export default function Home() {
-  const [network, setNetwork] = useState<Network>("testnet");
+  const [network, setNetwork] = useState<Network>("mainnet");
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div>

@@ -33,12 +33,12 @@ import { Account, Connection, Contract, Near, connect } from "near-api-js";
 import { set } from "date-fns";
 
 const connectionConfig = {
-  networkId: "testnet",
+  networkId: "mainnet",
   // keyStore: myKeyStore, // first create a key store
-  nodeUrl: "https://rpc.testnet.near.org",
-  walletUrl: "https://testnet.mynearwallet.com/",
-  helperUrl: "https://helper.testnet.near.org",
-  explorerUrl: "https://testnet.nearblocks.io",
+  nodeUrl: "https://rpc.mainnet.near.org",
+  walletUrl: "https://mainnet.mynearwallet.com/",
+  helperUrl: "https://helper.mainnet.near.org",
+  explorerUrl: "https://mainnet.nearblocks.io",
 };
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../../../components/ui/button";
@@ -48,27 +48,33 @@ import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
 import { NFTCarousel } from "@/components/carousel";
 import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
 import { NearWalletConnector } from "@/components/NearWalletSelector";
+import { checkIfAccountIsWinner, create, getNumOfWinners } from "@/app/actions";
 
 export default function NFTChallenge() {
-  const [network, setNetwork] = useState<Network>("testnet");
+  const [network, setNetwork] = useState<Network>("mainnet");
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();
   const [rewardNftMetaData, setRewardNftMetaData] = useState<NFTContract | null>();
   const [challengeNfts, setChallengeNfts] = useState<ReadonlyArray<NFTContract>>([]);
   const [challengeNftsOwned, setChallengeNftsOwned] = useState<ReadonlyArray<NftContracts>>([]);
   const [isWinner, setIsWinner] = useState<boolean>(false);
+  const [winnerCount, setWinnerCount] = useState(0);
 
   const { isConnected, selector } = useMbWallet();
 
-  const params = useParams<{ idPrefix: string }>();
-  const errorCode = useSearchParams().get("errorCode");
-  const txHashes = useSearchParams().get("txHashes");
+  console.log(challengeNfts, "tester");
 
+  const params = useParams<{ idPrefix: string }>()!;
+  const errorCode = useSearchParams()!.get("errorCode");
+  const txHashes = useSearchParams()!.get("txHashes");
+  // Old testnet contract: tenamint-challenge.near
   useEffect(() => {
     (async () => {
-      const nearConnection = await connect(connectionConfig);
-
+      const [nearConnection] = await Promise.all([connect(connectionConfig)]);
+      const winners = await getNumOfWinners();
+      console.log(winners, "winners");
+      setWinnerCount(winners);
       if (params.idPrefix) {
-        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.supreme-squirrel.testnet`, {
+        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.tenamint-challenge.near`, {
           viewMethods: ["get_challenge_metadata"],
           changeMethods: [],
           useLocalViewExecution: true,
@@ -111,24 +117,29 @@ export default function NFTChallenge() {
         const [rewardNft, challengeNfts, challengeNftsOwned] = await Promise.all([
           fetchNftContract(challengeMetaData.rewardNft, network),
           fetchNftContracts(challengeMetaData.challengeNftIds, network),
-          isConnected
-            ? // TODO: Change to grpahql call
-              Promise.all(
-                challengeMetaData.challengeNftIds.map((nft) => {
-                  const contract = new Contract(nearConnection.connection, `${nft}`, {
-                    viewMethods: ["nft_tokens_for_owner"],
-                    changeMethods: [],
-                    useLocalViewExecution: true,
-                  }) as Contract & {
-                    // wrong return type, but we're just checking for existence right now
-                    nft_tokens_for_owner: (args: { account_id: string }) => Promise<NftContracts[]>;
-                  };
-                  return contract.nft_tokens_for_owner({
-                    account_id: accounts[0].accountId,
-                  });
-                })
-              )
-            : Promise.resolve([]),
+
+          Promise.all(
+            challengeMetaData.challengeNftIds.map(async (nft) => {
+              if (!isConnected) return [];
+              try {
+                const contract = new Contract(nearConnection.connection, `${nft}`, {
+                  viewMethods: ["nft_tokens_for_owner"],
+                  changeMethods: [],
+                  useLocalViewExecution: true,
+                }) as Contract & {
+                  // wrong return type, but we're just checking for existence right now
+                  nft_tokens_for_owner: (args: { account_id: string }) => Promise<NftContracts[]>;
+                };
+
+                const tokens = await contract.nft_tokens_for_owner({
+                  account_id: accounts[0].accountId,
+                });
+                return tokens;
+              } catch (e) {
+                return [];
+              }
+            })
+          ),
         ]);
         setRewardNftMetaData(rewardNft);
         let modifiedChallengeNfts = challengeNfts.map((nft, idx) => ({
@@ -148,15 +159,16 @@ export default function NFTChallenge() {
         const wallet = await selector.wallet();
         const accounts = await wallet.getAccounts();
 
-        const nearConnection = await connect(connectionConfig);
-        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.supreme-squirrel.testnet`, {
-          viewMethods: ["check_account_is_winner"],
-          changeMethods: [],
-          useLocalViewExecution: true,
-        }) as Contract & {
-          check_account_is_winner: (args: { account_id: string }) => Promise<boolean>;
-        };
-        const isWinner = await contract.check_account_is_winner({ account_id: accounts[0].accountId });
+        // const nearConnection = await connect(connectionConfig);
+        // const contract = new Contract(nearConnection.connection, `${params.idPrefix}.tenamint-challenge.near`, {
+        //   viewMethods: ["check_account_is_winner"],
+        //   changeMethods: [],
+        //   useLocalViewExecution: true,
+        // }) as Contract & {
+        //   check_account_is_winner: (args: { account_id: string }) => Promise<boolean>;
+        // };
+        // const isWinner = await contract.check_account_is_winner({ account_id: accounts[0].accountId });
+        const isWinner = await checkIfAccountIsWinner(accounts[0].accountId);
         setIsWinner(isWinner);
         // fetch the user's NFTs
       } else {
@@ -167,25 +179,32 @@ export default function NFTChallenge() {
   }, [isConnected]);
 
   const submitEntry = async () => {
-    const wallet = await selector.wallet();
+    // const wallet = await selector.wallet();
 
-    if (!isConnected) return;
+    // if (!isConnected) return;
 
-    await wallet.signAndSendTransaction({
-      receiverId: `${params.idPrefix}.supreme-squirrel.testnet`,
-      actions: [
-        {
-          type: "FunctionCall",
-          params: {
-            methodName: "initiate_claim",
-            args: {},
-            gas: "90000000000000",
-            deposit: "0",
-          },
-        },
-      ],
-      callbackUrl: `${window.location.origin}/challenges/${params.idPrefix}`,
-    });
+    // await wallet.signAndSendTransaction({
+    //   receiverId: `${params.idPrefix}.tenamint-challenge.near`,
+    //   actions: [
+    //     {
+    //       type: "FunctionCall",
+    //       params: {
+    //         methodName: "initiate_claim",
+    //         args: {},
+    //         gas: "90000000000000",
+    //         deposit: "0",
+    //       },
+    //     },
+    //   ],
+    //   callbackUrl: `${window.location.origin}/challenges/${params.idPrefix}`,
+    // });
+    console.log("in here!");
+    if (challengeNftsOwned.length === challengeMetaData!.challengeNftIds.length) {
+      const wallet = await selector.wallet();
+      const accounts = await wallet.getAccounts();
+      await create(accounts[0].accountId);
+      setIsWinner(true);
+    }
   };
 
   if (!challengeMetaData) return <div>Loading...</div>;
@@ -198,7 +217,7 @@ export default function NFTChallenge() {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <a
-                  href={`https://testnet.nearblocks.io/address/${params.idPrefix}.supreme-squirrel.testnet`}
+                  href={`https://testnet.nearblocks.io/address/${params.idPrefix}.tenamint-challenge.near`}
                   className="font-medium hover:text-blue-500"
                 >
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
@@ -213,8 +232,12 @@ export default function NFTChallenge() {
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
                 {isConnected ? (
                   <div>
-                    <Button variant="default" onClick={() => submitEntry()}>
-                      Submit Entry
+                    <Button
+                      variant="default"
+                      disabled={challengeNftsOwned.length < challengeMetaData.challengeNftIds.length}
+                      onClick={() => submitEntry()}
+                    >
+                      Complete Challenge
                     </Button>
                     {challengeNftsOwned.length < challengeMetaData.challengeNftIds.length && (
                       <p className=" text-red-500 text-sm">Warning: You don&apos;t own all challenge nfts yet!</p>
@@ -236,8 +259,7 @@ export default function NFTChallenge() {
                 </p>
               ) : (
                 <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
-                  Make sure you have all challenge pieces before submitting your entry! Submitting entries cost gas
-                  whether you win or not.
+                  Make sure you have all challenge pieces before submitting your entry!
                 </p>
               )}
               {errorCode && (
@@ -262,7 +284,7 @@ export default function NFTChallenge() {
             </div>
             <img
               alt={`${challengeMetaData.name} Challenge media`}
-              className="mx-auto aspect-video overflow-hidden rounded-2xl object-cover"
+              className="mx-auto aspect-auto overflow-hidden rounded-2xl object-cover"
               height="400"
               src={
                 challengeMetaData.imageLink || "https://pbs.twimg.com/media/FmxbeaCaMAYAvKG?format=jpg&name=4096x4096"
@@ -292,7 +314,7 @@ export default function NFTChallenge() {
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Winners</p>
-                  <p className="font-medium">{challengeMetaData.winnersCount}</p>
+                  <p className="font-medium">{winnerCount}</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Max winners</p>
@@ -351,6 +373,7 @@ export default function NFTChallenge() {
           </div>
           <div className="flex flex-col items-center mt-12">
             <h2 className="text-2xl font-bold tracking-tighter">Challenge fragments</h2>
+
             <NFTCarousel nfts={challengeNfts} />
           </div>
         </div>
