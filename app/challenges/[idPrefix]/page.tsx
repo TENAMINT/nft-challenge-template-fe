@@ -34,7 +34,7 @@ import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
 import { NearWalletConnector } from "@/components/NearWalletSelector";
 import { MAX_U64_INT } from "@/components/ChallengeCreator";
 
-import { NFTCarousel } from "@/components/Carousel";
+import { NFTCarousel } from "../../../components/Carousel";
 import { NetworkContext } from "@/toolkit/blockchain";
 
 export default function NFTChallenge() {
