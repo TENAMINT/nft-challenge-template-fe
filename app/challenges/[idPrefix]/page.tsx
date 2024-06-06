@@ -18,62 +18,54 @@ To read more about using these font, please visit the Next.js documentation:
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
 "use client";
-import ChallengeCreator from "@/components/ChallengeCreator";
-import Form from "@/components/forms/NFTForm";
-import { NetworkToggle } from "@/components/network-toggle";
 import { Network } from "@mintbase-js/sdk";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { useParams, useSearchParams } from "next/navigation";
 import { Wallet, useMbWallet } from "@mintbase-js/react";
-import Link from "next/link";
 import { NFTChallengeMetaData, NFTContract, RawNFTChallengeMetaData } from "@/types/nft";
-import { Account, Connection, Contract, Near, connect } from "near-api-js";
-import { set } from "date-fns";
+import { Account, Contract, Near, connect } from "near-api-js";
 
 const connectionConfig = {
-  networkId: "mainnet",
+  networkId: "testnet",
   // keyStore: myKeyStore, // first create a key store
-  nodeUrl: "https://rpc.mainnet.near.org",
-  walletUrl: "https://mainnet.mynearwallet.com/",
-  helperUrl: "https://helper.mainnet.near.org",
-  explorerUrl: "https://mainnet.nearblocks.io",
+  nodeUrl: "https://rpc.testnet.near.org",
+  walletUrl: "https://testnet.mynearwallet.com/",
+  helperUrl: "https://helper.testnet.near.org",
+  explorerUrl: "https://testnet.nearblocks.io",
 };
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { NftContracts, NftMetadata } from "@mintbase-js/data/lib/graphql/codegen/graphql";
-import { fetchGraphQl } from "@mintbase-js/data";
+import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
 import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
 import { NFTCarousel } from "@/components/carousel";
 import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
 import { NearWalletConnector } from "@/components/NearWalletSelector";
 import { checkIfAccountIsWinner, create, getNumOfWinners } from "@/app/actions";
+import { CONTRACT_ID } from "@/toolkit/blockchain";
+import { MAX_U64_INT } from "@/components/ChallengeCreator";
 
 export default function NFTChallenge() {
-  const [network, setNetwork] = useState<Network>("mainnet");
+  const [network, setNetwork] = useState<Network>("testnet");
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();
   const [rewardNftMetaData, setRewardNftMetaData] = useState<NFTContract | null>();
   const [challengeNfts, setChallengeNfts] = useState<ReadonlyArray<NFTContract>>([]);
   const [challengeNftsOwned, setChallengeNftsOwned] = useState<ReadonlyArray<NftContracts>>([]);
   const [isWinner, setIsWinner] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [winnerCount, setWinnerCount] = useState(0);
 
   const { isConnected, selector } = useMbWallet();
 
   const params = useParams<{ idPrefix: string }>()!;
   const errorCode = useSearchParams()!.get("errorCode");
   const txHashes = useSearchParams()!.get("txHashes");
+
   // Old testnet contract: tenamint-challenge.near
   useEffect(() => {
     (async () => {
       const [nearConnection] = await Promise.all([connect(connectionConfig)]);
-      const winners = await getNumOfWinners();
-
-      setWinnerCount(winners);
       if (params.idPrefix) {
-        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.tenamint-challenge.near`, {
+        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.${CONTRACT_ID}`, {
           viewMethods: ["get_challenge_metadata"],
           changeMethods: [],
           useLocalViewExecution: true,
@@ -85,16 +77,14 @@ export default function NFTChallenge() {
         setChallengeMetaData({
           ...response,
           // convert to milliseconds
-          terminationDateInMs:
-            response.termination_date_in_ns === Number.MAX_SAFE_INTEGER
-              ? null
-              : response.termination_date_in_ns / 1000000,
-          winnerLimit: response.winner_limit === Number.MAX_SAFE_INTEGER ? null : response.winner_limit,
-          winnersCount: response.winners_count,
+          expirationDateInMs:
+            response.expiration_date_in_ns.toString() === MAX_U64_INT ? null : response.expiration_date_in_ns / 1000000,
+          winnerLimit: response.winner_limit.toString() === MAX_U64_INT ? null : response.winner_limit,
+          winnerCount: response.winners_count,
           challengeNftIds: response.challenge_nft_ids,
           challengeCompleted: response.challenge_completed,
-          rewardNft: response.reward_nft,
-          imageLink: response.image_link,
+          rewardNftId: response.reward_nft_id,
+          mediaLink: response.media_link,
           ownerId: response.owner_id,
         });
       }
@@ -114,7 +104,7 @@ export default function NFTChallenge() {
         }
 
         const [rewardNft, challengeNfts, challengeNftsOwned] = await Promise.all([
-          fetchNftContract(challengeMetaData.rewardNft, network),
+          fetchNftContract(challengeMetaData.rewardNftId, network),
           fetchNftContracts(challengeMetaData.challengeNftIds, network),
 
           Promise.all(
@@ -141,12 +131,12 @@ export default function NFTChallenge() {
           ),
         ]);
         setRewardNftMetaData(rewardNft);
-        let modifiedChallengeNfts = challengeNfts.map((nft, idx) => ({
+        let modifiedchallengeNftIds = challengeNfts.map((nft, idx) => ({
           ...nft,
           owned: challengeNftsOwned[idx].length > 0,
         }));
 
-        setChallengeNfts(modifiedChallengeNfts);
+        setChallengeNfts(modifiedchallengeNftIds);
         setChallengeNftsOwned(challengeNftsOwned.flat());
       }
     })();
@@ -160,19 +150,17 @@ export default function NFTChallenge() {
 
         const accounts = await wallet.getAccounts();
 
-        // const nearConnection = await connect(connectionConfig);
-        // const contract = new Contract(nearConnection.connection, `${params.idPrefix}.tenamint-challenge.near`, {
-        //   viewMethods: ["check_account_is_winner"],
-        //   changeMethods: [],
-        //   useLocalViewExecution: true,
-        // }) as Contract & {
-        //   check_account_is_winner: (args: { account_id: string }) => Promise<boolean>;
-        // };
-        // const isWinner = await contract.check_account_is_winner({ account_id: accounts[0].accountId });
-        const isWinner = await checkIfAccountIsWinner(accounts[0].accountId);
+        const nearConnection = await connect(connectionConfig);
+        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.${CONTRACT_ID}`, {
+          viewMethods: ["is_account_winner"],
+          changeMethods: [],
+          useLocalViewExecution: true,
+        }) as Contract & {
+          is_account_winner: (args: { account_id: string }) => Promise<boolean>;
+        };
+        const isWinner = await contract.is_account_winner({ account_id: accounts[0].accountId });
         setIsWinner(isWinner);
         setLoading(false);
-
         // fetch the user's NFTs
       } else {
         setIsWinner(false);
@@ -182,32 +170,25 @@ export default function NFTChallenge() {
   }, [isConnected]);
 
   const submitEntry = async () => {
-    // const wallet = await selector.wallet();
+    const wallet = await selector.wallet();
 
-    // if (!isConnected) return;
+    if (!isConnected) return;
 
-    // await wallet.signAndSendTransaction({
-    //   receiverId: `${params.idPrefix}.tenamint-challenge.near`,
-    //   actions: [
-    //     {
-    //       type: "FunctionCall",
-    //       params: {
-    //         methodName: "initiate_claim",
-    //         args: {},
-    //         gas: "90000000000000",
-    //         deposit: "0",
-    //       },
-    //     },
-    //   ],
-    //   callbackUrl: `${window.location.origin}/challenges/${params.idPrefix}`,
-    // });
-    if (challengeNftsOwned.length === challengeMetaData!.challengeNftIds.length) {
-      const wallet = await selector.wallet();
-      const accounts = await wallet.getAccounts();
-      await create(accounts[0].accountId);
-      setIsWinner(true);
-      setWinnerCount(winnerCount + 1);
-    }
+    await wallet.signAndSendTransaction({
+      receiverId: `${params.idPrefix}.${CONTRACT_ID}`,
+      actions: [
+        {
+          type: "FunctionCall",
+          params: {
+            methodName: "initiate_claim",
+            args: {},
+            gas: "90000000000000",
+            deposit: "0",
+          },
+        },
+      ],
+      callbackUrl: `${window.location.origin}/challenges/${params.idPrefix}`,
+    });
   };
 
   if (!challengeMetaData) return <div>Loading...</div>;
@@ -220,7 +201,7 @@ export default function NFTChallenge() {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <a
-                  href={`https://nearblocks.io/address/${params.idPrefix}.tenamint-challenge.near`}
+                  href={`https://nearblocks.io/address/${params.idPrefix}.${CONTRACT_ID}`}
                   className="font-medium hover:text-blue-500"
                 >
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
@@ -261,19 +242,7 @@ export default function NFTChallenge() {
               {isWinner ? (
                 <div>
                   <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
-                    Congrats, you&apos;ve completed this challenge! Check your{" "}
-                    <a href="https://wallet.mintbase.xyz/" className="text-blue-500" target="_blank">
-                      mintbase wallet
-                    </a>{" "}
-                    on May 31st to collect your winnings.
-                  </p>
-                  <p className="text-gray-500 md:text-m dark:text-gray-300 mt-2">
-                    {" "}
-                    Grand prize winner will be announced in the
-                    <a href="https://t.me/+50YY69ypVFc1ZDcx" className="text-blue-500 font-bold" target="_blank">
-                      {" "}
-                      TENAMINT Telegram channel
-                    </a>
+                    Congrats, you&apos;ve completed this challenge!
                   </p>
                 </div>
               ) : (
@@ -284,7 +253,7 @@ export default function NFTChallenge() {
               {errorCode && (
                 <div className="bg-red-100 text-red-500 p-4 rounded-lg">
                   <p className="text-sm">
-                    Unfourtanetly your entry wasn&apos;t accepted.
+                    Unfortunately your entry wasn&apos;t accepted.
                     {txHashes && (
                       <p>
                         , you can view the transaction{" "}
@@ -303,7 +272,7 @@ export default function NFTChallenge() {
               className="mx-auto aspect-auto overflow-hidden rounded-2xl object-cover"
               height="400"
               src={
-                challengeMetaData.imageLink || "https://pbs.twimg.com/media/FmxbeaCaMAYAvKG?format=jpg&name=4096x4096"
+                challengeMetaData.mediaLink || "https://pbs.twimg.com/media/FmxbeaCaMAYAvKG?format=jpg&name=4096x4096"
               }
               width="650"
             />
@@ -319,8 +288,8 @@ export default function NFTChallenge() {
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Termination Date</p>
                   <p className="font-medium">
-                    {challengeMetaData.terminationDateInMs
-                      ? new Date(challengeMetaData.terminationDateInMs).toLocaleString()
+                    {challengeMetaData.expirationDateInMs
+                      ? new Date(challengeMetaData.expirationDateInMs).toLocaleString()
                       : "Never ends"}
                   </p>
                 </div>
@@ -330,7 +299,7 @@ export default function NFTChallenge() {
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Winners</p>
-                  <p className="font-medium">{winnerCount}</p>
+                  <p className="font-medium">{challengeMetaData.winnerCount}</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Max winners</p>
@@ -341,10 +310,10 @@ export default function NFTChallenge() {
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500 dark:text-gray-400">Reward NFT</p>
                   <a
-                    href={`https://nearblocks.io/address/${challengeMetaData.rewardNft}`}
+                    href={`https://nearblocks.io/address/${challengeMetaData.rewardNftId}`}
                     className="font-medium text-blue-500"
                   >
-                    {challengeMetaData.rewardNft}
+                    {challengeMetaData.rewardNftId}
                   </a>
                 </div>
                 <div className="flex items-center justify-between">

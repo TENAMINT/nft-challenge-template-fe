@@ -20,12 +20,8 @@ To read more about using these font, please visit the Next.js documentation:
 "use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dispatch, SetStateAction, useState } from "react";
-import { NFTContract } from "@/types/nft";
-import { fetchGraphQl } from "@mintbase-js/data";
+import { Dispatch, SetStateAction } from "react";
 import { Progress } from "../ChallengeCreator";
-import { Network } from "@mintbase-js/sdk";
-import { fetchNftContract } from "@/toolkit/graphql";
 
 export default function NFTForm({
   name,
@@ -61,6 +57,19 @@ export default function NFTForm({
         <h2 className="text-xl font-semibold">Choose your challenge details!</h2>
         <p className="text-gray-500 dark:text-gray-400">Enter some details about your challenge below.</p>
       </div>
+      <div>
+        <label htmlFor="nft-id">Challenge ID Prefix</label>
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <Input
+              value={idPrefix}
+              onChange={(e) => setIdPrefix(e.target.value)}
+              id="id-prefix"
+              placeholder="Enter a prefix for the challenge ID"
+            />
+          </div>
+        </div>
+      </div>
       <div className="space-y-6">
         <div>
           <label htmlFor="nft-id">Challenge Name</label>
@@ -75,19 +84,7 @@ export default function NFTForm({
             </div>
           </div>
         </div>
-        <div>
-          <label htmlFor="nft-id">Challenge ID Prefix</label>
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <Input
-                value={idPrefix}
-                onChange={(e) => setIdPrefix(e.target.value)}
-                id="id-prefix"
-                placeholder="Enter a prefix for the challenge ID"
-              />
-            </div>
-          </div>
-        </div>
+
         <div>
           <label htmlFor="nft-id">Challenge Description</label>
           <div className="grid gap-4">
@@ -109,7 +106,7 @@ export default function NFTForm({
                 value={mediaLink}
                 onChange={(e) => setMediaLink(e.target.value)}
                 id="media-link"
-                placeholder="An optional media link for the challenge"
+                placeholder="A media link for the challenge"
               />
             </div>
           </div>

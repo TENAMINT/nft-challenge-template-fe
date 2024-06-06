@@ -1,19 +1,14 @@
 "use client";
-import ChallengeCreator from "@/components/ChallengeCreator";
-import Form from "@/components/forms/NFTForm";
-import { NetworkToggle } from "@/components/network-toggle";
+
 import { Network } from "@mintbase-js/sdk";
-import Image from "next/image";
 import { useState } from "react";
 
-import { useSearchParams } from "next/navigation";
-import { useMbWallet } from "@mintbase-js/react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const [network, setNetwork] = useState<Network>("mainnet");
+  const [network, setNetwork] = useState<Network>("testnet");
   const [challengeName, setChallengeName] = useState<string>("");
 
   return (

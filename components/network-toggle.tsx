@@ -28,7 +28,8 @@ export function NetworkToggle({
   network: Network;
   setNetwork: Dispatch<SetStateAction<Network>>;
 }) {
-  const { isConnected, selector, connect, activeAccountId } = useMbWallet();
+  const { isConnected, selector, activeAccountId } = useMbWallet();
+
   const [wallet, setWallet] = useState<Wallet | null>(null);
   useEffect(() => {
     (async () => {
@@ -55,9 +56,9 @@ export function NetworkToggle({
         )}
         <Toggle aria-label="Toggle network" className="flex items-center">
           <div
-            onClick={() => setNetwork("mainnet")}
+            onClick={() => setNetwork("testnet")}
             className={`px-4 py-2 text-sm font-medium rounded-l-md ${
-              network === "mainnet" ? selectedClass : unselectedClass
+              network === "testnet" ? selectedClass : unselectedClass
             } transition-colors duration-200 ease-in-out`}
           >
             Mainnet

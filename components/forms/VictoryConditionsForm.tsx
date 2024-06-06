@@ -33,24 +33,30 @@ import { fetchNftContracts } from "@/toolkit/graphql";
 
 export function VictoryConditionsForm({
   setProgress,
-  challengeNfts,
-  setChallengeNfts,
+  challengeNftIds,
+  setChallengeNftIds,
   setWinnerCount,
   winnerCount,
-  network,
 }: {
-  challengeNfts: Array<NFTContract>;
+  challengeNftIds: Array<string>;
+  setChallengeNftIds: Dispatch<SetStateAction<Array<string>>>;
   setProgress: Dispatch<SetStateAction<Progress>>;
-  setChallengeNfts: Dispatch<SetStateAction<Array<NFTContract>>>;
-  setWinnerCount: Dispatch<SetStateAction<number>>;
-  winnerCount: number;
-  network: Network;
+  setWinnerCount: Dispatch<SetStateAction<number | undefined>>;
+  winnerCount: number | undefined;
 }) {
-  const [challengeCount, setChallengeCount] = useState(Math.max(challengeNfts.length, 1));
-  const [nftIds, setNftIds] = useState<Array<string>>(challengeNfts.map((nft) => nft.id));
+  const [challengeCount, setChallengeCount] = useState(Math.max(challengeNftIds.length, 1));
+  const [nftIds, setNftIds] = useState<Array<string>>(challengeNftIds);
 
   const onNext = async () => {
-    setChallengeNfts(await fetchNftContracts(nftIds, "mainnet"));
+    if (nftIds.length <= 0) {
+      alert("Please enter at least one challenge nft id.");
+      return;
+    }
+    if (nftIds.length !== challengeCount || nftIds.some((id) => id === "")) {
+      alert("Please enter all challenge nft ids.");
+      return;
+    }
+    setChallengeNftIds(nftIds);
   };
   return (
     <div className="mx-auto max-w-md space-y-6">
@@ -81,7 +87,7 @@ export function VictoryConditionsForm({
             if (e === "limited") {
               setWinnerCount(1);
             } else {
-              setWinnerCount(Number.MAX_SAFE_INTEGER);
+              setWinnerCount(undefined);
             }
           }}
           defaultValue="unlimited"
@@ -92,7 +98,7 @@ export function VictoryConditionsForm({
           <SelectContent>
             <SelectItem
               onChange={() => {
-                setWinnerCount(Number.MAX_SAFE_INTEGER);
+                setWinnerCount(undefined);
               }}
               value="unlimited"
             >
@@ -109,7 +115,7 @@ export function VictoryConditionsForm({
           </SelectContent>
         </Select>
       </div>
-      <div className={winnerCount === Number.MAX_SAFE_INTEGER ? "hidden" : "grid gap-2"}>
+      <div className={winnerCount == null ? "hidden" : "grid gap-2"}>
         <Label htmlFor="challenges">Number of Winners</Label>
         <Input
           placeholder="Enter number of winners"
@@ -129,36 +135,31 @@ export function VictoryConditionsForm({
         />
       </div>
       <div>
-        {[...Array(challengeCount).keys()].map((num) => (
-          <div key={num} className="grid gap-4">
-            <div className="text-lg font-medium grid gap-2">Challenge #{num + 1}</div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="challenges">NFT ID</Label>
+        {challengeCount > 0 &&
+          [...Array(challengeCount).keys()].map((num) => (
+            <div key={num} className="grid gap-4">
+              <div className="text-lg font-medium grid gap-2">Challenge #{num + 1}</div>
               <div className="flex items-center justify-between">
-                <Label className="font-medium mr-3" htmlFor="create-can-end-challenge">
-                  Burn piece on claim
-                </Label>
-                <Checkbox
-                  // checked={creatorCanEndChallenge}
-                  // onCheckedChange={() => {
-                  //   setCreatorCanEndChallenge(!creatorCanEndChallenge);
-                  // }}
-                  id="create-can-end-challenge"
-                />
+                <Label htmlFor="challenges">NFT ID</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="font-medium mr-3" htmlFor="create-can-end-challenge">
+                    Burn piece on claim
+                  </Label>
+                  <Checkbox id="create-can-end-challenge" />
+                </div>
               </div>
+              <Input
+                value={nftIds[num]}
+                onChange={(e) => {
+                  let nftIdsCopy = [...nftIds];
+                  nftIdsCopy[num] = e.target.value;
+                  setNftIds(nftIdsCopy);
+                }}
+                id="nft-id"
+                placeholder="Enter the NFT ID"
+              />
             </div>
-            <Input
-              value={nftIds[num]}
-              onChange={(e) => {
-                let nftIdsCopy = [...nftIds];
-                nftIdsCopy[num] = e.target.value;
-                setNftIds(nftIdsCopy);
-              }}
-              id="nft-id"
-              placeholder="Enter the NFT ID"
-            />
-          </div>
-        ))}
+          ))}
       </div>
 
       <Button

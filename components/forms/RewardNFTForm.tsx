@@ -52,10 +52,10 @@ export default function RewardNFTForm({
   const [rewardNftId, setRewardNftId] = useState(rewardNft?.id || "");
 
   const onSubmit = async () => {
-    if (!rewardNftId || !rewardTitle || !rewardDescription) {
-      alert("Please fill all necessary details.");
-      return;
-    }
+    // if (!rewardNftId || !rewardTitle || !rewardDescription || rewardMediaLink) {
+    //   alert("Please fill all necessary details.");
+    //   return;
+    // }
 
     const nft = await fetchNftContract(rewardNftId, network);
     if (nft == null) {
@@ -70,7 +70,10 @@ export default function RewardNFTForm({
     <div className="mx-auto max-w-md space-y-6">
       <div className="space-y-2 text-left">
         <h2 className="text-xl font-semibold">Reward NFT Details</h2>
-        <p className="text-gray-500 dark:text-gray-400">Enter some details about your reward NFT below.</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          Enter some details about your reward NFT below. These fields are all only necessary if you plan on minting the
+          reward NFT through the challenge contract.
+        </p>
       </div>
       <div className="space-y-6">
         <div>
@@ -94,7 +97,7 @@ export default function RewardNFTForm({
                 value={rewardTitle}
                 onChange={(e) => setRewardTitle(e.target.value)}
                 id="rewardTitle"
-                placeholder="Enter a rewardTitle for the challenge"
+                placeholder="Enter a title for the reward nfts"
               />
             </div>
           </div>

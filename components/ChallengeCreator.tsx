@@ -7,10 +7,8 @@ import { Button } from "./ui/button";
 import { Network, execute } from "@mintbase-js/sdk";
 import { NearWalletConnector } from "./NearWalletSelector";
 import { MintbaseWalletContextProvider, useMbWallet } from "@mintbase-js/react";
-import { WalletSelector, setupWalletSelector } from "@near-wallet-selector/core";
-import { providers } from "near-api-js";
-import BigNumber from "bignumber.js";
 import RewardNFTForm from "./forms/RewardNFTForm";
+import { CONTRACT_ID } from "@/toolkit/blockchain";
 
 export enum Progress {
   ChallengeDetails,
@@ -20,6 +18,8 @@ export enum Progress {
   CreateContract,
   ChallengeCreated,
 }
+
+export const MAX_U64_INT = "18446744073709551615";
 
 /**
  * Current assumptions:
@@ -39,12 +39,12 @@ export default function ChallengeCreator({ network }: { network: Network }) {
   const [desc, setDesc] = useState<string | undefined>(undefined);
   const [idPrefix, setIdPrefix] = useState<string | undefined>(undefined);
   const [mediaLink, setMediaLink] = useState<string | undefined>(undefined);
-  const [challengeNfts, setChallengeNfts] = useState<Array<NFTContract>>([]);
+  const [challengeNftIds, setChallengeNftIds] = useState<Array<string>>([]);
   const [terminationDate, setTerminationDate] = useState<Date | undefined>(undefined);
   const [creatorCanEndChallenge, setCreatorCanEndChallenge] = useState(false);
-  const [winnerCount, setWinnerCount] = useState(Number.MAX_SAFE_INTEGER);
+  const [winnerCount, setWinnerCount] = useState<undefined | number>(undefined);
   const [maxProgress, setMaxProgress] = useState(Progress.ChallengeDetails);
-  const { isConnected, selector, connect, activeAccountId } = useMbWallet();
+  const { isConnected, selector } = useMbWallet();
 
   useEffect(() => {
     if (rewardNft != null) {
@@ -53,10 +53,10 @@ export default function ChallengeCreator({ network }: { network: Network }) {
   }, [rewardNft]);
 
   useEffect(() => {
-    if (challengeNfts.length > 0) {
+    if (challengeNftIds.length > 0) {
       setProgress(Progress.SetTerminationRules);
     }
-  }, [challengeNfts]);
+  }, [challengeNftIds]);
 
   useEffect(() => {
     if (progress > maxProgress) {
@@ -71,7 +71,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
 
     let terminationDateStr = terminationDate?.getTime().toString();
     if (terminationDate == null) {
-      terminationDateStr = Number.MAX_SAFE_INTEGER.toString();
+      terminationDateStr = MAX_U64_INT.toString();
     } else {
       terminationDateStr = terminationDateStr + "000000";
     }
@@ -80,13 +80,14 @@ export default function ChallengeCreator({ network }: { network: Network }) {
       id_prefix: idPrefix, // change
       name,
       description: desc,
-      image_link: mediaLink,
-      reward_nft: rewardNft!.id,
-      challenge_nft_ids: challengeNfts.map((nft) => nft.id),
+      media_link: mediaLink,
+      reward_nft_id: rewardNft!.id,
+      challenge_nft_ids: challengeNftIds,
       // TODO: Convert to nano seconds
-      _termination_date_in_ns: terminationDateStr,
-      _winner_limit: winnerCount.toString(),
-      reward_token_metadata: {
+      _expiration_date_in_ns: terminationDateStr,
+      _winner_limit: winnerCount?.toString() || MAX_U64_INT,
+      creator_can_update: creatorCanEndChallenge,
+      reward_nft_metadata: {
         title: rewardTitle!,
         description: rewardDesc!,
         media: rewardMediaLink!,
@@ -94,7 +95,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     };
 
     const res = await wallet.signAndSendTransaction({
-      receiverId: "tenamint-challenge.near",
+      receiverId: CONTRACT_ID,
       actions: [
         {
           type: "FunctionCall",
@@ -153,15 +154,15 @@ export default function ChallengeCreator({ network }: { network: Network }) {
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
               {/* <AwardIcon className="w-4 h-4" /> */}
               <span>
-                {winnerCount == Number.MAX_SAFE_INTEGER ? "Unlimited" : winnerCount} winner{winnerCount > 1 ? "s" : ""}
+                {winnerCount == null ? "Unlimited" : winnerCount} winner{winnerCount && winnerCount > 1 ? "s" : ""}
               </span>
             </div>
           )}
-          {challengeNfts.length > 0 && (
+          {challengeNftIds.length > 0 && (
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
               {/* <PuzzleIcon className="w-4 h-4" /> */}
               <span>
-                {challengeNfts.length} Challenge{challengeNfts.length > 1 ? "s" : ""}
+                {challengeNftIds.length} Challenge{challengeNftIds.length > 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -185,7 +186,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     case Progress.ChallengeDetails:
       return !isConnected ? (
         <div className="flex flex-col items-center justify-center">
-          <div className="mb-6">You`&apos;ll need to connect your NEAR wallet to create a challenge.</div>
+          <div className="mb-6">You&apos;ll need to connect your NEAR wallet to create a challenge.</div>
           <NearWalletConnector />
         </div>
       ) : (
@@ -228,12 +229,11 @@ export default function ChallengeCreator({ network }: { network: Network }) {
         <div>
           {prefix}
           <VictoryConditionsForm
-            challengeNfts={challengeNfts}
-            setChallengeNfts={setChallengeNfts}
+            challengeNftIds={challengeNftIds}
+            setChallengeNftIds={setChallengeNftIds}
             setProgress={setProgress}
             winnerCount={winnerCount}
             setWinnerCount={setWinnerCount}
-            network={network}
           />
         </div>
       );

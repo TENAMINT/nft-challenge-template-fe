@@ -53,13 +53,13 @@ export async function fetchNftContracts(nftIds: ReadonlyArray<string>, network: 
   });
   if (res.data == null) return [];
 
-  let challengeNfts: Array<NFTContract> = [];
+  let challengeNftIds: Array<NFTContract> = [];
   for (const nft of res.data.nft_contracts) {
     for (let i = 0; i < frequencies[nft.id]; i++) {
-      challengeNfts = [...challengeNfts, nft];
+      challengeNftIds = [...challengeNftIds, nft];
     }
   }
-  return challengeNfts;
+  return challengeNftIds;
 }
 
 // record how much gas is
