@@ -24,7 +24,8 @@ import { Dispatch, SetStateAction, useContext, useState } from "react";
 import { NFTContract } from "@/types/nft";
 import { fetchNftContract } from "@/toolkit/graphql";
 import { Progress } from "../ChallengeCreator";
-import { NetworkContext } from "@/app/layout";
+import { NetworkContext } from "@/toolkit/blockchain";
+
 export default function RewardNFTForm({
   rewardNft,
   setRewardNft,

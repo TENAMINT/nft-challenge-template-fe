@@ -7,24 +7,10 @@ import "@near-wallet-selector/modal-ui/styles.css";
 import { MintbaseWalletContextProvider } from "@mintbase-js/react";
 import { Suspense } from "react";
 import React from "react";
-import { CONNECTION_CONFIG, CONTRACT_ID, NETWORK } from "@/toolkit/blockchain";
+import { CONNECTION_CONFIG, CONTRACT_ID, NETWORK, NetworkContext } from "@/toolkit/blockchain";
 import { Network } from "@mintbase-js/sdk";
 
 const inter = Inter({ subsets: ["latin"] });
-export const NetworkContext = React.createContext<
-  | {
-      network: Network;
-      callbackUrl: string;
-      failureUrl: string;
-      challengeFactoryContractId: string;
-      networkId: string;
-      nodeUrl: string;
-      walletUrl: string;
-      helperUrl: string;
-      explorerUrl: string;
-    }
-  | undefined
->(undefined);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const mbContext = {

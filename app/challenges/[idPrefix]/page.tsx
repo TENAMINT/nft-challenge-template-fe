@@ -33,8 +33,9 @@ import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
 import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
 import { NearWalletConnector } from "@/components/NearWalletSelector";
 import { MAX_U64_INT } from "@/components/ChallengeCreator";
-import { NetworkContext } from "@/app/layout";
-import { NFTCarousel } from "@/components/carousel";
+
+import { NFTCarousel } from "@/components/Carousel";
+import { NetworkContext } from "@/toolkit/blockchain";
 
 export default function NFTChallenge() {
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();

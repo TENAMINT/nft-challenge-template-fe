@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { NearWalletConnector } from "./NearWalletSelector";
 import { useMbWallet } from "@mintbase-js/react";
 import RewardNFTForm from "./forms/RewardNFTForm";
-import { NetworkContext } from "@/app/layout";
+import { NetworkContext } from "@/toolkit/blockchain";
 
 export enum Progress {
   ChallengeDetails,
