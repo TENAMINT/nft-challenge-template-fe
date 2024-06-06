@@ -23,7 +23,7 @@ import { CarouselItem, CarouselContent, CarouselPrevious, CarouselNext, Carousel
 import { NFTContract } from "@/types/nft";
 import { useState } from "react";
 
-export function NFTCarousel({ nfts }: { nfts: ReadonlyArray<NFTContract> }) {
+export default function NFTCarousel({ nfts }: { nfts: ReadonlyArray<NFTContract> }) {
   const [index, setIndex] = useState(0);
   return (
     <Carousel className="w-1/3 max-w-4xl mt-0">
