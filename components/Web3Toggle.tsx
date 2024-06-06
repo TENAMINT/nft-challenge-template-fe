@@ -17,11 +17,10 @@ To read more about using these font, please visit the Next.js documentation:
 - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
-import { Toggle } from "@/components/ui/toggle";
-import { Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
-import { Network } from "@mintbase-js/sdk";
+import { useEffect, useState } from "react";
 import { Wallet, useMbWallet } from "@mintbase-js/react";
 import { Button } from "./ui/button";
+
 export function Web3Toggle() {
   const { isConnected, selector, activeAccountId, disconnect } = useMbWallet();
 

@@ -1,6 +1,5 @@
 import { NFTContract } from "@/types/nft";
 import { fetchGraphQl } from "@mintbase-js/data";
-import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
 import { Network } from "@mintbase-js/sdk";
 import _ from "lodash";
 

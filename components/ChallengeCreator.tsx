@@ -150,7 +150,6 @@ export default function ChallengeCreator() {
           </div>
           {maxProgress >= Progress.SetChallenges && (
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-              {/* <AwardIcon className="w-4 h-4" /> */}
               <span>
                 {winnerCount == null ? "Unlimited" : winnerCount} winner{winnerCount && winnerCount > 1 ? "s" : ""}
               </span>
@@ -158,7 +157,6 @@ export default function ChallengeCreator() {
           )}
           {challengeNftIds.length > 0 && (
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-              {/* <PuzzleIcon className="w-4 h-4" /> */}
               <span>
                 {challengeNftIds.length} Challenge{challengeNftIds.length > 1 ? "s" : ""}
               </span>
@@ -166,13 +164,11 @@ export default function ChallengeCreator() {
           )}
           {maxProgress >= Progress.SetTerminationRules && (
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-              {/* <CalendarDaysIcon className="w-4 h-4" /> */}
               <span>{terminationDate != null ? `Ends on ${terminationDate.toLocaleString()}` : `Never ends`}</span>
             </div>
           )}
           {maxProgress >= Progress.SetTerminationRules && (
             <div className="flex items-center gap-10 text-sm text-gray-500 dark:text-gray-400">
-              {/* <BoltIcon className="w-4 h-4" /> */}
               <span>Creator can{!creatorCanEndChallenge && "not"} end challenge</span>
             </div>
           )}

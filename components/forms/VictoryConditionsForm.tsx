@@ -17,19 +17,14 @@ To read more about using these font, please visit the Next.js documentation:
 - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
-import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card";
+
 import { Label } from "@/components/ui/label";
 import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { NFTContract } from "@/types/nft";
 import { Progress } from "../ChallengeCreator";
 import { Dispatch, SetStateAction, useState } from "react";
-import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
-import { Network } from "@mintbase-js/sdk";
 import { Checkbox } from "../ui/checkbox";
-import { fetchGraphQl } from "@mintbase-js/data";
-import { fetchNftContracts } from "@/toolkit/graphql";
 
 export function VictoryConditionsForm({
   setProgress,
@@ -64,21 +59,6 @@ export function VictoryConditionsForm({
         <h2 className="text-xl font-semibold">Choose your challenge&apos;s victory conditions</h2>
         <p className="text-gray-500 dark:text-gray-400">Enter the details for your challenges.</p>
       </div>
-      {/* <div className="flex flex-col space-y-1 mt-2">
-          <h3>Reward:</h3>
-          <img
-            alt="NFT Icon"
-            className="rounded-md"
-            height="80"
-            src={nft.icon}
-            style={{
-              aspectRatio: "80/80",
-              objectFit: "cover",
-            }}
-            width="80"
-          />
-          <div className="text-lg font-medium">{nft.name}</div>
-        </div> */}
 
       <div className="grid gap-2">
         <Label htmlFor="winners">Quantity of Winners</Label>

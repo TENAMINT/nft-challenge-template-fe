@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dispatch, SetStateAction, useContext, useState } from "react";
 import { NFTContract } from "@/types/nft";
-import { Network } from "@mintbase-js/sdk";
 import { fetchNftContract } from "@/toolkit/graphql";
 import { Progress } from "../ChallengeCreator";
 import { NetworkContext } from "@/app/layout";

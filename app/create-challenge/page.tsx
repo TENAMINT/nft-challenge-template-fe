@@ -1,6 +1,6 @@
 "use client";
 import ChallengeCreator from "@/components/ChallengeCreator";
-import { Web3Toggle } from "@/components/web3-toggle";
+import { Web3Toggle } from "@/components/Web3Toggle";
 
 export default function Home() {
   return (

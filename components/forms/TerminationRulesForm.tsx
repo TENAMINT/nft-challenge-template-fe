@@ -21,7 +21,7 @@ import { PopoverTrigger, PopoverContent, Popover } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { Progress } from "../ChallengeCreator";
 
 export function TerminationRulesForm({
@@ -71,7 +71,7 @@ export function TerminationRulesForm({
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  className="w-full justify-start rounded-md border border-gray-200 border-gray-300 bg-white px-4 py-2 text-left font-normal text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-800 dark:focus:border-gray-50 dark:focus:ring-gray-50"
+                  className="w-full justify-start rounded-md border  border-gray-300 bg-white px-4 py-2 text-left font-normal text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:border-gray-800 dark:focus:border-gray-50 dark:focus:ring-gray-50"
                   type="button"
                 >
                   <div className="flex items-center">

@@ -18,7 +18,6 @@ To read more about using these font, please visit the Next.js documentation:
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
 "use client";
-import { Network } from "@mintbase-js/sdk";
 import { useContext, useEffect, useState } from "react";
 
 import { useParams, useSearchParams } from "next/navigation";
@@ -30,11 +29,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
 import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
-import { NFTCarousel } from "@/components/carousel";
+
 import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
 import { NearWalletConnector } from "@/components/NearWalletSelector";
 import { MAX_U64_INT } from "@/components/ChallengeCreator";
 import { NetworkContext } from "@/app/layout";
+import { NFTCarousel } from "@/components/carousel";
 
 export default function NFTChallenge() {
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();
@@ -66,7 +66,7 @@ export default function NFTChallenge() {
         const response = await contract.get_challenge_metadata();
         setChallengeMetaData({
           ...response,
-          // convert to milliseconds
+          // convert to milliseconds, consider using bignumber package
           expirationDateInMs:
             response.expiration_date_in_ns.toString() === MAX_U64_INT ? null : response.expiration_date_in_ns / 1000000,
           winnerLimit: response.winner_limit.toString() === MAX_U64_INT ? null : response.winner_limit,
@@ -79,7 +79,7 @@ export default function NFTChallenge() {
         });
       }
     })();
-  }, []);
+  }, [challengeFactoryContractId, connectionConfig, params.idPrefix]);
 
   useEffect(() => {
     (async () => {
@@ -130,7 +130,7 @@ export default function NFTChallenge() {
         setChallengeNftsOwned(challengeNftsOwned.flat());
       }
     })();
-  }, [challengeMetaData]);
+  }, [challengeMetaData, isConnected, network, selector, connectionConfig]);
 
   useEffect(() => {
     (async () => {
@@ -344,7 +344,6 @@ export default function NFTChallenge() {
           </div>
           <div className="flex flex-col items-center mt-12">
             <h2 className="text-2xl font-bold tracking-tighter">Challenge fragments</h2>
-
             <NFTCarousel nfts={challengeNfts} />
           </div>
         </div>

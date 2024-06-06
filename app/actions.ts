@@ -1,6 +1,5 @@
 "use server";
 
-import { NextApiRequest, NextApiResponse } from "next";
 import { MongoClient, ServerApiVersion } from "mongodb";
 
 export async function create(account_id: String) {

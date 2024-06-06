@@ -1,6 +1,5 @@
 "use client";
 
-import { Network } from "@mintbase-js/sdk";
 import { useState } from "react";
 
 import Link from "next/link";
