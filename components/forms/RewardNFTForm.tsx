@@ -20,16 +20,15 @@ To read more about using these font, please visit the Next.js documentation:
 "use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useContext, useState } from "react";
 import { NFTContract } from "@/types/nft";
 import { Network } from "@mintbase-js/sdk";
 import { fetchNftContract } from "@/toolkit/graphql";
 import { Progress } from "../ChallengeCreator";
-
+import { NetworkContext } from "@/app/layout";
 export default function RewardNFTForm({
   rewardNft,
   setRewardNft,
-  network,
   rewardTitle,
   setRewardTitle,
   rewardDescription,
@@ -46,17 +45,12 @@ export default function RewardNFTForm({
   setRewardDescription: Dispatch<SetStateAction<string | undefined>>;
   rewardMediaLink: string | undefined;
   setRewardMediaLink: Dispatch<SetStateAction<string | undefined>>;
-  network: Network;
   setProgress: Dispatch<SetStateAction<Progress>>;
 }) {
   const [rewardNftId, setRewardNftId] = useState(rewardNft?.id || "");
+  const { network } = useContext(NetworkContext)!;
 
   const onSubmit = async () => {
-    // if (!rewardNftId || !rewardTitle || !rewardDescription || rewardMediaLink) {
-    //   alert("Please fill all necessary details.");
-    //   return;
-    // }
-
     const nft = await fetchNftContract(rewardNftId, network);
     if (nft == null) {
       alert("NFT not found");

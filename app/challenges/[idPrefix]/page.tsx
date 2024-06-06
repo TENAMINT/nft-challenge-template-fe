@@ -19,21 +19,13 @@ To read more about using these font, please visit the Next.js documentation:
 **/
 "use client";
 import { Network } from "@mintbase-js/sdk";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { useParams, useSearchParams } from "next/navigation";
 import { Wallet, useMbWallet } from "@mintbase-js/react";
 import { NFTChallengeMetaData, NFTContract, RawNFTChallengeMetaData } from "@/types/nft";
 import { Account, Contract, Near, connect } from "near-api-js";
 
-const connectionConfig = {
-  networkId: "testnet",
-  // keyStore: myKeyStore, // first create a key store
-  nodeUrl: "https://rpc.testnet.near.org",
-  walletUrl: "https://testnet.mynearwallet.com/",
-  helperUrl: "https://helper.testnet.near.org",
-  explorerUrl: "https://testnet.nearblocks.io",
-};
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { NftContracts } from "@mintbase-js/data/lib/graphql/codegen/graphql";
@@ -41,12 +33,10 @@ import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
 import { NFTCarousel } from "@/components/carousel";
 import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
 import { NearWalletConnector } from "@/components/NearWalletSelector";
-import { checkIfAccountIsWinner, create, getNumOfWinners } from "@/app/actions";
-import { CONTRACT_ID } from "@/toolkit/blockchain";
 import { MAX_U64_INT } from "@/components/ChallengeCreator";
+import { NetworkContext } from "@/app/layout";
 
 export default function NFTChallenge() {
-  const [network, setNetwork] = useState<Network>("testnet");
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();
   const [rewardNftMetaData, setRewardNftMetaData] = useState<NFTContract | null>();
   const [challengeNfts, setChallengeNfts] = useState<ReadonlyArray<NFTContract>>([]);
@@ -55,17 +45,17 @@ export default function NFTChallenge() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const { isConnected, selector } = useMbWallet();
+  const { network, challengeFactoryContractId, ...connectionConfig } = useContext(NetworkContext)!;
 
   const params = useParams<{ idPrefix: string }>()!;
   const errorCode = useSearchParams()!.get("errorCode");
   const txHashes = useSearchParams()!.get("txHashes");
 
-  // Old testnet contract: tenamint-challenge.near
   useEffect(() => {
     (async () => {
-      const [nearConnection] = await Promise.all([connect(connectionConfig)]);
+      const nearConnection = await connect(connectionConfig);
       if (params.idPrefix) {
-        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.${CONTRACT_ID}`, {
+        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.${challengeFactoryContractId}`, {
           viewMethods: ["get_challenge_metadata"],
           changeMethods: [],
           useLocalViewExecution: true,
@@ -151,7 +141,7 @@ export default function NFTChallenge() {
         const accounts = await wallet.getAccounts();
 
         const nearConnection = await connect(connectionConfig);
-        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.${CONTRACT_ID}`, {
+        const contract = new Contract(nearConnection.connection, `${params.idPrefix}.${challengeFactoryContractId}`, {
           viewMethods: ["is_account_winner"],
           changeMethods: [],
           useLocalViewExecution: true,
@@ -175,7 +165,7 @@ export default function NFTChallenge() {
     if (!isConnected) return;
 
     await wallet.signAndSendTransaction({
-      receiverId: `${params.idPrefix}.${CONTRACT_ID}`,
+      receiverId: `${params.idPrefix}.${challengeFactoryContractId}`,
       actions: [
         {
           type: "FunctionCall",
@@ -201,7 +191,7 @@ export default function NFTChallenge() {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <a
-                  href={`https://nearblocks.io/address/${params.idPrefix}.${CONTRACT_ID}`}
+                  href={`https://nearblocks.io/address/${params.idPrefix}.${challengeFactoryContractId}`}
                   className="font-medium hover:text-blue-500"
                 >
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">

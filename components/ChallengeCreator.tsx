@@ -1,14 +1,13 @@
 import NFTForm from "@/components/forms/NFTForm";
 import { NFTContract, NFTMetaData } from "@/types/nft";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { VictoryConditionsForm } from "./forms/VictoryConditionsForm";
 import { TerminationRulesForm } from "./forms/TerminationRulesForm";
 import { Button } from "./ui/button";
-import { Network, execute } from "@mintbase-js/sdk";
 import { NearWalletConnector } from "./NearWalletSelector";
-import { MintbaseWalletContextProvider, useMbWallet } from "@mintbase-js/react";
+import { useMbWallet } from "@mintbase-js/react";
 import RewardNFTForm from "./forms/RewardNFTForm";
-import { CONTRACT_ID } from "@/toolkit/blockchain";
+import { NetworkContext } from "@/app/layout";
 
 export enum Progress {
   ChallengeDetails,
@@ -21,13 +20,7 @@ export enum Progress {
 
 export const MAX_U64_INT = "18446744073709551615";
 
-/**
- * Current assumptions:
- * Reward NFT already exists on blockchain
- * Challenge pieces already exist on blockchain
- *
- */
-export default function ChallengeCreator({ network }: { network: Network }) {
+export default function ChallengeCreator() {
   const [progress, setProgress] = useState<Progress>(Progress.ChallengeDetails);
   // Reward Info
   const [rewardNft, setRewardNft] = useState<NFTContract | undefined>(undefined);
@@ -45,6 +38,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
   const [winnerCount, setWinnerCount] = useState<undefined | number>(undefined);
   const [maxProgress, setMaxProgress] = useState(Progress.ChallengeDetails);
   const { isConnected, selector } = useMbWallet();
+  const { challengeFactoryContractId } = useContext(NetworkContext)!;
 
   useEffect(() => {
     if (rewardNft != null) {
@@ -63,6 +57,11 @@ export default function ChallengeCreator({ network }: { network: Network }) {
       setMaxProgress(progress);
     }
   }, [progress]);
+  useEffect(() => {
+    if (!isConnected) {
+      setProgress(Progress.ChallengeDetails);
+    }
+  });
 
   const onSubmit = async () => {
     const wallet = await selector.wallet();
@@ -77,13 +76,12 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     }
 
     const args = {
-      id_prefix: idPrefix, // change
+      id_prefix: idPrefix,
       name,
       description: desc,
       media_link: mediaLink,
       reward_nft_id: rewardNft!.id,
       challenge_nft_ids: challengeNftIds,
-      // TODO: Convert to nano seconds
       _expiration_date_in_ns: terminationDateStr,
       _winner_limit: winnerCount?.toString() || MAX_U64_INT,
       creator_can_update: creatorCanEndChallenge,
@@ -95,7 +93,7 @@ export default function ChallengeCreator({ network }: { network: Network }) {
     };
 
     const res = await wallet.signAndSendTransaction({
-      receiverId: CONTRACT_ID,
+      receiverId: challengeFactoryContractId,
       actions: [
         {
           type: "FunctionCall",
@@ -212,7 +210,6 @@ export default function ChallengeCreator({ network }: { network: Network }) {
           <RewardNFTForm
             rewardNft={rewardNft}
             setRewardNft={setRewardNft}
-            network={network}
             rewardTitle={rewardTitle}
             setRewardTitle={setRewardTitle}
             rewardDescription={rewardDesc}

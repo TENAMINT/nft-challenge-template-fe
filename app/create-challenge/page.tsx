@@ -1,22 +1,14 @@
 "use client";
 import ChallengeCreator from "@/components/ChallengeCreator";
-import Form from "@/components/forms/NFTForm";
-import { NetworkToggle } from "@/components/network-toggle";
-import { Network } from "@mintbase-js/sdk";
-import Image from "next/image";
-import { useState } from "react";
-
-import { useSearchParams } from "next/navigation";
-import { useMbWallet } from "@mintbase-js/react";
+import { Web3Toggle } from "@/components/web3-toggle";
 
 export default function Home() {
-  const [network, setNetwork] = useState<Network>("testnet");
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div>
-        <NetworkToggle network={network} setNetwork={setNetwork} />
+        <Web3Toggle />
         <h1 className="text-3xl text-center font-bold my-5">Create Your NFT Challenge</h1>
-        <ChallengeCreator network={network} />
+        <ChallengeCreator />
       </div>
     </main>
   );
