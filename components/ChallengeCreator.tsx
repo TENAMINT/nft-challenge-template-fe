@@ -48,12 +48,6 @@ export default function ChallengeCreator() {
   }, [rewardNft]);
 
   useEffect(() => {
-    if (challengeNftIds.length > 0) {
-      setProgress(Progress.SetTerminationRules);
-    }
-  }, [challengeNftIds]);
-
-  useEffect(() => {
     if (progress > maxProgress) {
       setMaxProgress(progress);
     }
