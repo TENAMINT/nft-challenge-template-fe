@@ -32,15 +32,20 @@ export function VictoryConditionsForm({
   setChallengeNftIds,
   setWinnerCount,
   winnerCount,
+  burnChallengeNftId,
+  setBurnChallengeNftId,
 }: {
   challengeNftIds: Array<string>;
   setChallengeNftIds: Dispatch<SetStateAction<Array<string>>>;
   setProgress: Dispatch<SetStateAction<Progress>>;
   setWinnerCount: Dispatch<SetStateAction<number | undefined>>;
   winnerCount: number | undefined;
+  burnChallengeNftId: Array<boolean>;
+  setBurnChallengeNftId: Dispatch<SetStateAction<Array<boolean>>>;
 }) {
   const [challengeCount, setChallengeCount] = useState(Math.max(challengeNftIds.length, 1));
   const [nftIds, setNftIds] = useState<Array<string>>(challengeNftIds);
+  const [burnNftIds, setBurnNftIds] = useState<Array<boolean>>(burnChallengeNftId);
 
   const onNext = async () => {
     if (nftIds.length <= 0) {
@@ -51,7 +56,21 @@ export function VictoryConditionsForm({
       alert("Please enter all challenge nft ids.");
       return;
     }
+
+    if (new Set(nftIds).size !== nftIds.length) {
+      alert("Please enter unique challenge nft ids.");
+      return;
+    }
+
+    const typedBurnNftIds = burnNftIds.map((burn) => !!burn);
+    if (typedBurnNftIds.length !== challengeCount) {
+      alert("Please indicate whether the challenge nft should be burned on claim.");
+      return;
+    }
+
     setChallengeNftIds(nftIds);
+    setBurnChallengeNftId(typedBurnNftIds);
+    setProgress(Progress.SetTerminationRules);
   };
   return (
     <div className="mx-auto max-w-md space-y-6">
@@ -125,7 +144,14 @@ export function VictoryConditionsForm({
                   <Label className="font-medium mr-3" htmlFor="create-can-end-challenge">
                     Burn piece on claim
                   </Label>
-                  <Checkbox id="create-can-end-challenge" />
+                  <Checkbox
+                    onCheckedChange={(checked) => {
+                      let burnNftIdsCopy = [...burnNftIds];
+                      burnNftIdsCopy[num] = checked.valueOf() as boolean;
+                      setBurnNftIds(burnNftIdsCopy);
+                    }}
+                    id="create-can-end-challenge"
+                  />
                 </div>
               </div>
               <Input

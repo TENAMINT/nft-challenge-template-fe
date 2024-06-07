@@ -33,6 +33,7 @@ export default function ChallengeCreator() {
   const [idPrefix, setIdPrefix] = useState<string | undefined>(undefined);
   const [mediaLink, setMediaLink] = useState<string | undefined>(undefined);
   const [challengeNftIds, setChallengeNftIds] = useState<Array<string>>([]);
+  const [burnChallengeNftId, setBurnChallengeNftId] = useState<Array<boolean>>([]);
   const [terminationDate, setTerminationDate] = useState<Date | undefined>(undefined);
   const [creatorCanEndChallenge, setCreatorCanEndChallenge] = useState(false);
   const [winnerCount, setWinnerCount] = useState<undefined | number>(undefined);
@@ -85,6 +86,7 @@ export default function ChallengeCreator() {
       _expiration_date_in_ns: terminationDateStr,
       _winner_limit: winnerCount?.toString() || MAX_U64_INT,
       creator_can_update: creatorCanEndChallenge,
+      burn_challenge_piece_on_claim: burnChallengeNftId,
       reward_nft_metadata: {
         title: rewardTitle!,
         description: rewardDesc!,
@@ -227,6 +229,8 @@ export default function ChallengeCreator() {
             setProgress={setProgress}
             winnerCount={winnerCount}
             setWinnerCount={setWinnerCount}
+            burnChallengeNftId={burnChallengeNftId}
+            setBurnChallengeNftId={setBurnChallengeNftId}
           />
         </div>
       );
