@@ -173,7 +173,7 @@ export default function NFTChallenge() {
           params: {
             methodName: "initiate_claim",
             args: {},
-            gas: "90000000000000",
+            gas: "30000000000000",
             deposit: challengeNfts.length.toString(),
           },
         },

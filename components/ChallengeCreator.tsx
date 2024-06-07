@@ -60,7 +60,6 @@ export default function ChallengeCreator() {
 
   const onSubmit = async () => {
     const wallet = await selector.wallet();
-
     if (!isConnected) return false;
 
     let terminationDateStr = terminationDate?.getTime().toString();
