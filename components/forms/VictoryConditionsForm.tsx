@@ -45,30 +45,32 @@ export function VictoryConditionsForm({
 }) {
   const [challengeCount, setChallengeCount] = useState(Math.max(challengeNftIds.length, 1));
   const [nftIds, setNftIds] = useState<Array<string>>(challengeNftIds);
-  const [burnNftIds, setBurnNftIds] = useState<Array<boolean>>(burnChallengeNftId);
+  const [burnNftOnClaim, setBurnNftOnClaim] = useState<Array<boolean>>(burnChallengeNftId);
 
   const onNext = async () => {
-    if (nftIds.length <= 0) {
+    const filteredNftIds = nftIds.slice(0, challengeCount);
+
+    if (filteredNftIds.length <= 0) {
       alert("Please enter at least one challenge nft id.");
       return;
     }
-    if (nftIds.length !== challengeCount || nftIds.some((id) => id === "")) {
+    if (filteredNftIds.length !== challengeCount || filteredNftIds.some((id) => id === "")) {
       alert("Please enter all challenge nft ids.");
       return;
     }
 
-    if (new Set(nftIds).size !== nftIds.length) {
+    if (new Set(filteredNftIds).size !== filteredNftIds.length) {
       alert("Please enter unique challenge nft ids.");
       return;
     }
 
-    const typedBurnNftIds = burnNftIds.map((burn) => !!burn);
+    const typedBurnNftIds = burnNftOnClaim.slice(0, challengeCount).map((burn) => !!burn);
+
     if (typedBurnNftIds.length !== challengeCount) {
       alert("Please indicate whether the challenge nft should be burned on claim.");
       return;
     }
-
-    setChallengeNftIds(nftIds);
+    setChallengeNftIds(filteredNftIds);
     setBurnChallengeNftId(typedBurnNftIds);
     setProgress(Progress.SetTerminationRules);
   };
@@ -118,7 +120,10 @@ export function VictoryConditionsForm({
         <Label htmlFor="challenges">Number of Winners</Label>
         <Input
           placeholder="Enter number of winners"
-          onChange={(e) => setWinnerCount(parseInt(e.target.value))}
+          onChange={(e) => {
+            setWinnerCount(parseInt(e.target.value));
+            setBurnNftOnClaim(burnNftOnClaim.fill(false, burnNftOnClaim.length, parseInt(e.target.value) || 0));
+          }}
           value={winnerCount}
           type="number"
         />
@@ -146,9 +151,9 @@ export function VictoryConditionsForm({
                   </Label>
                   <Checkbox
                     onCheckedChange={(checked) => {
-                      let burnNftIdsCopy = [...burnNftIds];
+                      let burnNftIdsCopy = [...burnNftOnClaim];
                       burnNftIdsCopy[num] = checked.valueOf() as boolean;
-                      setBurnNftIds(burnNftIdsCopy);
+                      setBurnNftOnClaim(burnNftIdsCopy);
                     }}
                     id="create-can-end-challenge"
                   />

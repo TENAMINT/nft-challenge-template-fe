@@ -32,8 +32,8 @@ export default function ChallengeCreator() {
   const [desc, setDesc] = useState<string | undefined>(undefined);
   const [idPrefix, setIdPrefix] = useState<string | undefined>(undefined);
   const [mediaLink, setMediaLink] = useState<string | undefined>(undefined);
-  const [challengeNftIds, setChallengeNftIds] = useState<Array<string>>([]);
-  const [burnChallengeNftId, setBurnChallengeNftId] = useState<Array<boolean>>([]);
+  const [challengeNftIds, setChallengeNftIds] = useState<Array<string>>([""]);
+  const [burnChallengeNftId, setBurnChallengeNftId] = useState<Array<boolean>>([false]);
   const [terminationDate, setTerminationDate] = useState<Date | undefined>(undefined);
   const [creatorCanEndChallenge, setCreatorCanEndChallenge] = useState(false);
   const [winnerCount, setWinnerCount] = useState<undefined | number>(undefined);
