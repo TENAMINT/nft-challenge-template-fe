@@ -44,7 +44,7 @@ export default function NFTCarousel({ nfts }: { nfts: ReadonlyArray<NFTContract>
               />
               <div className="mt-4 text-center">
                 <h3 className="text-lg font-semibold">
-                  <a href={`https://nearblocks.io/address/${nft.id}`} className="font-medium text-blue-500">
+                  <a href={`https://testnet.nearblocks.io/address/${nft.id}`} className="font-medium text-blue-500">
                     {nft.symbol}{" "}
                   </a>
                 </h3>
