@@ -65,6 +65,7 @@ export default function NFTChallenge() {
         };
 
         const response = await contract.get_challenge_metadata();
+
         setChallengeMetaData({
           ...response,
           // convert to milliseconds, consider using bignumber package
@@ -80,7 +81,7 @@ export default function NFTChallenge() {
         });
       }
     })();
-  }, [challengeFactoryContractId, connectionConfig, params.idPrefix]);
+  }, []);
 
   useEffect(() => {
     (async () => {

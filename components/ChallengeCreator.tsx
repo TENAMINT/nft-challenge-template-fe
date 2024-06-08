@@ -18,7 +18,7 @@ export enum Progress {
   ChallengeCreated,
 }
 
-export const MAX_U64_INT = "18446744073709551615";
+export const MAX_U64_INT = "18446744073709552000";
 
 export default function ChallengeCreator() {
   const [progress, setProgress] = useState<Progress>(Progress.ChallengeDetails);
