@@ -18,7 +18,7 @@ export enum Progress {
   ChallengeCreated,
 }
 
-export const MAX_U64_INT = "18446744073709552000";
+export const MAX_INT = "18000000000000000000";
 
 export default function ChallengeCreator() {
   const [progress, setProgress] = useState<Progress>(Progress.ChallengeDetails);
@@ -64,7 +64,7 @@ export default function ChallengeCreator() {
 
     let terminationDateStr = terminationDate?.getTime().toString();
     if (terminationDate == null) {
-      terminationDateStr = MAX_U64_INT.toString();
+      terminationDateStr = MAX_INT.toString();
     } else {
       terminationDateStr = terminationDateStr + "000000";
     }
@@ -77,7 +77,7 @@ export default function ChallengeCreator() {
       reward_nft_id: rewardNft!.id,
       challenge_nft_ids: challengeNftIds,
       _expiration_date_in_ns: terminationDateStr,
-      _winner_limit: winnerCount?.toString() || MAX_U64_INT,
+      _winner_limit: winnerCount?.toString() || MAX_INT,
       creator_can_update: creatorCanEndChallenge,
       burn_challenge_piece_on_claim: burnChallengeNftId,
       reward_nft_metadata: {

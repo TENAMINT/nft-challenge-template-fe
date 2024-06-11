@@ -32,7 +32,7 @@ import { fetchNftContract, fetchNftContracts } from "@/toolkit/graphql";
 
 import { SignMessageMethod } from "@near-wallet-selector/core/src/lib/wallet";
 import { NearWalletConnector } from "@/components/NearWalletSelector";
-import { MAX_U64_INT } from "@/components/ChallengeCreator";
+import { MAX_INT } from "@/components/ChallengeCreator";
 
 import { NetworkContext } from "@/toolkit/blockchain";
 import NFTCarousel from "@/components/carousel";
@@ -65,13 +65,12 @@ export default function NFTChallenge() {
         };
 
         const response = await contract.get_challenge_metadata();
-
         setChallengeMetaData({
           ...response,
           // convert to milliseconds, consider using bignumber package
           expirationDateInMs:
-            response.expiration_date_in_ns.toString() === MAX_U64_INT ? null : response.expiration_date_in_ns / 1000000,
-          winnerLimit: response.winner_limit.toString() === MAX_U64_INT ? null : response.winner_limit,
+            response.expiration_date_in_ns.toString() === MAX_INT ? null : response.expiration_date_in_ns / 1000000,
+          winnerLimit: response.winner_limit.toString() === MAX_INT ? null : response.winner_limit,
           winnerCount: response.winners_count,
           challengeNftIds: response.challenge_nft_ids,
           challengeCompleted: response.challenge_completed,
