@@ -36,6 +36,7 @@ import { MAX_INT } from "@/components/ChallengeCreator";
 
 import { NetworkContext } from "@/toolkit/blockchain";
 import NFTCarousel from "@/components/carousel";
+import { Web3Toggle } from "@/components/Web3Toggle";
 
 export default function NFTChallenge() {
   const [challengeMetaData, setChallengeMetaData] = useState<NFTChallengeMetaData | null>();
@@ -187,6 +188,7 @@ export default function NFTChallenge() {
   return (
     <>
       <section className="w-full py-12 md:py-24 lg:py-32">
+        <Web3Toggle />
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 xl:grid-cols-[1fr_600px]">
             <div className="flex flex-col justify-center space-y-4">

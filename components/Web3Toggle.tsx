@@ -39,7 +39,7 @@ export function Web3Toggle() {
     <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6 absolute right-0 top-10">
       <div className="ml-auto flex flex-row items-center gap-4">
         {wallet != null && (
-          <div className="mr-4">
+          <div className="mr-4 flex flex-col items-center">
             <p>You are connected as {activeAccountId}</p>
             <Button
               onClick={() => {
