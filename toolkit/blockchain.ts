@@ -1,18 +1,16 @@
 // TODO: Put these in env vars
-
 import { Network } from "@mintbase-js/sdk";
 import React from "react";
 
-// export const CONTRACT_ID = "tenamint-challenge.near";
-export const CONTRACT_ID = "supreme-squirrel.testnet";
-export const NETWORK = "testnet";
+export const CONTRACT_ID = process.env.NEXT_PUBLIC_CHALLENGE_FACTORY_CONTRACT_ID;
+export const NETWORK = process.env.NEXT_PUBLIC_NETWORK;
 
 export const CONNECTION_CONFIG = {
-  networkId: "testnet",
-  nodeUrl: "https://rpc.testnet.near.org",
-  walletUrl: "https://testnet.mynearwallet.com/",
-  helperUrl: "https://helper.testnet.near.org",
-  explorerUrl: "https://testnet.nearblocks.io",
+  networkId: NETWORK!,
+  nodeUrl: process.env.NEXT_PUBLIC_NODE_URL!,
+  walletUrl: process.env.NEXT_PUBLIC_WALLET_URL!,
+  helperUrl: process.env.NEXT_PUBLIC_HELPER_URL!,
+  explorerUrl: process.env.NEXT_PUBLIC_EXPLORER_URL!,
 };
 
 export const NetworkContext = React.createContext<

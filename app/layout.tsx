@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const mbContext = {
     network: (process.env.NEXT_PUBLIC_NETWORK || NETWORK) as Network,
     callbackUrl: process.env.NEXT_PUBLIC_CALLBACK_URL || (typeof window !== "undefined" ? window.location.origin : ""),
-    challengeFactoryContractId: CONTRACT_ID,
+    challengeFactoryContractId: CONTRACT_ID!,
     failureUrl:
       process.env.NEXT_PUBLIC_FAILURE_URL ||
       (typeof window !== "undefined" ? `${window.location.origin}?success=false` : ""),
