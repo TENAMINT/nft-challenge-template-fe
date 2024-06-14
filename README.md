@@ -23,6 +23,9 @@ We have set the environment variables necessary to get the template working on t
 
 ## Demo videos
 [Demo Video Part 1](https://drive.google.com/file/d/1-bRR35WkdvPea_CV7A29NWSJ_wWAGqBn/view?usp=sharing)
+
+
+
 [Demo Video Part 2](https://drive.google.com/file/d/1oxsuym7PGw_IojSCQH6prk1IpT-r2dpW/view?usp=sharing)
 
 ## Notes on Using V0 for AI generated components
