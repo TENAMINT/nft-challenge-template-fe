@@ -96,7 +96,7 @@ export default function ChallengeCreator() {
             methodName: "create_challenge",
             args,
             gas: "90000000000000",
-            deposit: "4000000000000000000000000",
+            deposit: "1000000000000000000000000",
           },
         },
       ],
